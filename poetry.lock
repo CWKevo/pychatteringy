@@ -1,0 +1,14 @@
+[[package]]
+category = "main"
+description = "Fuzzy string matching in python"
+name = "fuzzywuzzy"
+optional = false
+python-versions = "*"
+version = "0.18.0"
+
+[metadata]
+content-hash = "2f2f523e0727896f03f3c5d2582c4b5605c4950540ea78d8f3e48350cf2db030"
+python-versions = "^2.7"
+
+[metadata.hashes]
+fuzzywuzzy = ["45016e92264780e58972dca1b3d939ac864b78437422beecebb3095f8efd00e8", "928244b28db720d1e0ee7587acf660ea49d7e4c632569cad4f1cd7e68a5f0993"]

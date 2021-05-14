@@ -1,7 +1,7 @@
 from typing import Union, List, Iterable, Iterator
 
 from re import match
-from datetime import strptime, time
+from datetime import datetime, time
 from helpers import is_time_between
 
 
@@ -36,8 +36,8 @@ def evaluate_intent_conditions(conditions: Union[Iterable[str], Iterator[str]]) 
                 else:
                     # TODO: Compactify:
                     times = c[1].split("-")
-                    time1 = strptime(times[0], "%k:%M").time()
-                    time2 = strptime(times[1], "%k:%M").time()
+                    time1 = datetime.strptime(times[0], "%k:%M").time()
+                    time2 = datetime.strptime(times[1], "%k:%M").time()
                     x = is_time_between(time1, time2)
 
                     all.append(x)
