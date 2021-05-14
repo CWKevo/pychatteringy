@@ -3,7 +3,7 @@
         "user": ["Goodmorning.", "Morning."],
         "bot": ["Morning.", "Goodmorning."],
         "condition": {
-            "if": "time:morning",
+            "if": "time;morning",
             "else": ["Hi. But it's not really a morning, is it?"]
         }
     },
@@ -11,7 +11,7 @@
         "user": ["Lunch time!", "Good lunchtime.", "It's lunchtime!", "Time for lunch..."],
         "bot": ["Have a nice lunch!", "Lunch time indeed.", "I am hungry... Wait, I'm just a bot-"],
         "condition": {
-            "if": "time:lunch",
+            "if": "time;lunch",
             "else": ["It's not lunchtime for me...", "Oh, it's not lunch, but have a nice meal!"]
         }
     },
@@ -22,7 +22,7 @@
     },
     {
         "user": ["What time is it?", "Can you tell me the current time?"],
-        "bot": ["Good day.", "Pleasure to speak to you."],
+        "bot": ["The current time is %(time)."], # TODO: Figure out a way to pass variables
         "condition": null
     }
 ]
