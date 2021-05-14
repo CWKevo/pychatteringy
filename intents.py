@@ -29,12 +29,12 @@ class Intent(dict):
             return Condition({})
 
 
-def get_intent(intent_json_path: str=INTENTS_ROOT + "/generic.json") -> dict:
+def get_intents(intent_json_path: str=INTENTS_ROOT + "/generic.json") -> dict:
     with open(intent_json_path, "r", encoding="UTF-8") as intent_file:
         intent_json = json.load(intent_file) # type: dict
         return intent_json
 
 
-def intent_generator(intent_dict: dict=get_intent()) -> Generator[Intent, None, None]:
-    for intent in intent_dict:
+def intent_generator(intents=get_intents()) -> Generator[Intent, None, None]:
+    for intent in intents:
         yield Intent(intent)
