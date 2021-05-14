@@ -11,7 +11,7 @@
         "user": ["Lunch time!", "Good lunchtime.", "It's lunchtime!", "Time for lunch..."],
         "bot": ["Have a nice lunch!", "Lunch time indeed.", "I am hungry... Wait, I'm just a bot-"],
         "conditions": {
-            "if": ["time;lunch"],
+            "if": ["time;11:50-12:10"],
             "else": ["It's not lunchtime for me...", "Oh, it's not lunch, but have a nice meal!"]
         }
     },
