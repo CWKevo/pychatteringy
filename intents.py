@@ -5,7 +5,7 @@ ROOT = pathlib.Path(__file__).parent.absolute()
 INTENTS_ROOT = f"{ROOT}/intents"
 
 import json
-from conditions import Condition
+from conditions import Conditions
 
 
 class Intent(dict):
@@ -20,13 +20,13 @@ class Intent(dict):
 
 
     @property
-    def condition(self) -> Union[Condition, None]:
-        raw = self.get("condition", {})
+    def conditions(self) -> Union[Conditions, None]:
+        raw = self.get("conditions", {})
 
         if raw:
-            return Condition(raw)
+            return Conditions(raw)
         else:
-            return Condition({})
+            return Conditions({})
 
 
 def get_intents(intent_json_path: str=INTENTS_ROOT + "/generic.json") -> dict:
