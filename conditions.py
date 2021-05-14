@@ -50,14 +50,14 @@ def evaluate_intent_conditions(conditions: Union[Iterable[str], Iterator[str]]) 
         return None
 
 
-class Condition(dict):
+class Conditions(dict):
     @property
-    def if_raw(self) -> Union[str, None]:
-        return self.get("if", None)
+    def if_raw(self) -> Union[List[str], List[None]]:
+        return self.get("if", list())
 
 
     @property
-    def else_responses(self) -> List[str]:
+    def else_responses(self) -> Union[List[str], List[None]]:
         return self.get("else", list())
 
 
