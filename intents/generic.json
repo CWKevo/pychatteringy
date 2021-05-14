@@ -1,0 +1,28 @@
+[
+    {
+        "user": ["Goodmorning.", "Morning."],
+        "bot": ["Morning.", "Goodmorning."],
+        "condition": {
+            "if": "time:morning",
+            "else": ["Hi. But it's not really a morning, is it?"]
+        }
+    },
+    {
+        "user": ["Lunch time!", "Good lunchtime.", "It's lunchtime!", "Time for lunch..."],
+        "bot": ["Have a nice lunch!", "Lunch time indeed.", "I am hungry... Wait, I'm just a bot-"],
+        "condition": {
+            "if": "time:lunch",
+            "else": ["It's not lunchtime for me...", "Oh, it's not lunch, but have a nice meal!"]
+        }
+    },
+    {
+        "user": ["Hello.", "Hi."],
+        "bot": ["Good day.", "Pleasure to speak to you."],
+        "condition": null
+    },
+    {
+        "user": ["What time is it?", "Can you tell me the current time?"],
+        "bot": ["Good day.", "Pleasure to speak to you."],
+        "condition": null
+    }
+]

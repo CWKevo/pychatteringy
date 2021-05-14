@@ -1,3 +1,2 @@
 # pyDiscord-Chatteringy
-
-A WIP Discord utility & chatbot buddy friend chum pal friend buddy friend.
+Create very simple chatbots by using JSON in Python.
