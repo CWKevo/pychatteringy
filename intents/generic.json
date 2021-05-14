@@ -22,7 +22,8 @@
     },
     {
         "user": ["What time is it?", "Can you tell me the current time?"],
-        "bot": ["The current time is %(time)."], # TODO: Figure out a way to pass variables
+        "bot": ["The current time is %(time)s."],
+        "//": "# TODO: Figure out a way to pass variables"
         "condition": null
     }
 ]
