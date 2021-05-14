@@ -5,7 +5,7 @@ description = ""
 authors = ["CWKevo <<>>"]
 
 [tool.poetry.dependencies]
-python = "^2.7"
+python = "^3.6"
 fuzzywuzzy = "^0.18.0"
 
 [tool.poetry.dev-dependencies]
