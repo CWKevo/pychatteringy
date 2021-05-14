@@ -4,22 +4,29 @@ from datetime import time
 from helpers import is_time_between
 
 
-def evaluate_intent_condition(condition: Union[List[str], None]) -> bool:
-    if condition and type(condition) == list:
-        c0 = condition[0].lower()
-        c1 = condition[1].lower()
+def evaluate_intent_conditions(conditions: Union[List[str], None]) -> bool:
+    all = list()
+    
+    if type(conditions) == list:
+        for condition in conditions:
+            c = condition.strip().lower().split(":")
 
-        if c0 == "time":
-            if c1 == "morning":
-                return is_time_between(time(3,00), time(8,00))
+            if c[0] == "time":
+                if c[1] == "morning":
+                    x = is_time_between(time(3,00), time(8,00))
+                    all.append(x)
             
-            elif c1 == "noon" or c1 == "lunch":
-                return is_time_between(time(11,30), time(12,30))
+                elif c[1] == "noon" or c[1] == "lunch":
+                    x = is_time_between(time(11,30), time(12,30))
+                    all.append(x)
 
+                else:
+                    all.append(False)
             else:
-                return False
-        else:
-            return None
+                return None
+ 
+        return all(c == True for c in all)
+
     else:
         return None
 
