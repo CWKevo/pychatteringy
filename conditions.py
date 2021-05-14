@@ -1,10 +1,10 @@
-from typing import Union, List
+from typing import Union, List, Iterable, Iterator
 
 from datetime import time
 from helpers import is_time_between
 
 
-def evaluate_intent_conditions(conditions: Union[List[str], None]) -> bool:
+def evaluate_intent_conditions(conditions: Union[Iterable[str], Iterator[str]]) -> bool:
     all = list()
     
     if type(conditions) == list:
@@ -44,10 +44,4 @@ class Condition(dict):
 
     @property
     def state(self) -> bool:
-        raw = self.if_raw
-        try:
-            split = raw.split(":", maxsplit=1)
-        except AttributeError:
-            split = None
-
-        return evaluate_intent_condition(split)
+        return evaluate_intent_conditions(self.if_raw)
