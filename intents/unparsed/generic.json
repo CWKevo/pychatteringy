@@ -14,7 +14,7 @@
         "priority": 0.7,
         "conditions": {
             "if": ["time==11:50-12:10"],
-            "else": ["It's not lunchtime for me...", "Oh, it's not lunch, but have a nice meal!"]
+            "else": ["It's not lunchtime for me...", "Oh, it's not lunch yet for me, but have a nice meal!"]
         }
     },
     {
@@ -27,7 +27,7 @@
         "user": ["What time is it?", "Can you tell me the current time?"],
         "bot": ["The current time is %(time)s."],
         "priority": 0.7,
-        "//": "# TODO: Figure out a way to pass variables",
+        "//": "# TODO: Figure out a way to pass variables - Python's format could do it, but might be inefficient with many variables",
         "conditions": []
     }
 ]
