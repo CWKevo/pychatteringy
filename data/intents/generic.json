@@ -1,0 +1,4 @@
+[
+  {"user": ["Goodmorning.", "Morning."], "bot": ["Morning. Have you slept well?"], "priority": 0.7, "conditions": {}, "actions": []},
+  {"user": ["What is the time?", "What's the current time?"], "bot": ["The current time is %(current_time)s"], "priority": 0.7, "conditions": {"if": ["user_data==has_asked_for_time:False"], "else": ["You have already asked me what time it is."]}, "actions": ["user_data=has_asked_for_time"]}
+]

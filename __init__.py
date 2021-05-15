@@ -7,8 +7,8 @@ sys.path.append(ROOT)
 
 if __name__ == "__main__":
     from pychatteringy.classes.chatbot import ChatBot
-    chatbot = ChatBot(intents_directory="intents")
+    chatbot = ChatBot(intents_directory="./data/intents")
 
     while True:
-    	x = chatbot.get_response(input("You: "))
+    	x = chatbot.chat(__name__, input("You: "))
     	print("Bot:", x)

@@ -2,7 +2,7 @@ import json
 from os import listdir
 
 
-def parse_all(directory: str="intents/unparsed", output_directory: str="intents"):
+def parse_all(directory: str="data/intents/unparsed", output_directory: str="data/intents"):
     for file in listdir(directory):
         minified_file = open(f"{output_directory}/{file}", "w")
 

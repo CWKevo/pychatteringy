@@ -1,7 +1,5 @@
 from typing import Union, List
 
-from pychatteringy.functions.evaluation import evaluate_intent_conditions
-
 
 class Intent(dict):
     @property
@@ -16,7 +14,12 @@ class Intent(dict):
 
     @property
     def priority(self) -> float:
-        return float(self.get("priority", 1.0))
+        return float(self.get("priority", 0.5))
+
+
+    @property
+    def actions(self) -> List[str]:
+        return self.get("actions", list())
 
 
     @property
@@ -38,8 +41,3 @@ class Conditions(dict):
     @property
     def else_responses(self) -> Union[List[str], List[None]]:
         return self.get("else", list())
-
-
-    @property
-    def state(self) -> bool:
-        return evaluate_intent_conditions(self.if_raw)
