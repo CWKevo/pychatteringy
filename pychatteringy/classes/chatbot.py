@@ -115,16 +115,27 @@ class ChatBot():
             Creates the user data file, if necessary.
         """
 
-        with open(f"{self.user_data_directory}/{user}.json", "w+") as raw_user_data:
+        def __update():
             try:
-                user_data = json.load(raw_user_data) # type: dict
+                with open(f"{self.user_data_directory}/{user}.json", "r") as raw_user_data:
+                    d = raw_user_data.read()
 
-            except json.decoder.JSONDecodeError as e:
+                    if len(d) <= 3:
+                        user_data = dict()
+                    else:
+                        user_data = json.loads(d) # type: dict
+
+            except FileNotFoundError:
                 user_data = dict()
 
-            user_data[key] = data
-            json.dump(user_data, raw_user_data)
-            return user_data
+            with open(f"{self.user_data_directory}/{user}.json", "w") as raw_user_data:
+                user_data[key] = data
+                new = json.dumps(user_data)
+                raw_user_data.write(new)
+
+                return user_data
+
+        return __update()
 
 
     def get_user_data(self, user: str) -> dict:
@@ -158,6 +169,7 @@ class ChatBot():
         ```
         """
 
+        self.update_user_data("last_query", query, user=user)
         intent = self.__get_possible_intent(query)
 
         if not intent:
@@ -240,7 +252,7 @@ class ChatBot():
                     if ":" in c[1]:
                         pair = c[1].split(":", maxsplit=1)
 
-                        if user_data.get(pair[0], None) == pair[1]:
+                        if str(user_data.get(pair[0], None)).lower() == pair[1]:
                             solved.append(True)
                         else:
                             solved.append(False)

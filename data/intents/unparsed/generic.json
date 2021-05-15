@@ -1,19 +1,22 @@
 [
     {
-        "user": ["Goodmorning.", "Morning."],
+        "user": ["Good morning.", "Morning."],
         "bot": ["Morning. Have you slept well?"],
         "priority": 0.7,
-        "conditions": {},
+        "conditions": {
+            "if": ["time==morning"],
+            "else": ["It's not morning for me, but good morning to you!", "Not a morning there :("]
+        },
         "actions": []
     },
     {
-        "user": ["What is the time?", "What's the current time?"],
-        "bot": ["The current time is %(current_time)s"],
-        "priority": 0.7,
+        "user": ["Hi!", "Hello.", "Hola!", "Ahoy!", "Good day"],
+        "bot": ["Hello!", "Hi! Nice to see you again!", "Hello!"],
+        "priority": 0.8,
         "conditions": {
-            "if": ["user_data==has_asked_for_time:False"],
-            "else": ["You have already asked me what time it is."]
+            "if": ["user_data==has_talked"],
+            "else": ["Hello, we haven't talked before yet!"]
         },
-        "actions": ["user_data=has_asked_for_time"]
+        "actions": ["user_data=has_talked"]
     }
 ]
