@@ -1,0 +1,3 @@
+[
+  {"user": ["Luncheon."], "bot": ["Good luncheon."], "priority": 0.1, "conditions": {"if": ["time==lunch"], "else": ["HENLO"]}}
+]

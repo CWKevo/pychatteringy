@@ -1,2 +1,2 @@
 language = "python"
-run = "python3 chatbot.py"
+run = "python3 run.py"
