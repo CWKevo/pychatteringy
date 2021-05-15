@@ -53,8 +53,6 @@ class ChatBot():
 
         else:
             all_f = False
-        
-        print(all_f)
 
         if all_f:
             all_intent_files = [intent_file for intent_file in listdir(self.intents_directory) if intent_file.endswith(".json")]
@@ -91,10 +89,12 @@ class ChatBot():
 
                 else:
                     continue
-                    
 
-        highest_priority_intent = max(possible_intents, key=lambda intent: intent.priority)
-        return highest_priority_intent
+        if possible_intents:
+            highest_priority_intent = max(possible_intents, key=lambda intent: intent.priority)
+            return highest_priority_intent
+        else:
+            return None
 
 
     def get_response(self, query: str) -> str:
