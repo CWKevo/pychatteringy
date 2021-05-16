@@ -39,10 +39,17 @@ class ChatBot():
         brackets accross lines and then yielding valid JSON is pretty tough, so why not make both of our lives easier?)
     """
 
+<<<<<<< HEAD
     def __init__(self, fallback_response: str="Sorry, I don't understand that yet.", intents_directory: str="data/intents", intent_file: Union[str, None]=None, user_data_directory: str="data/users", threshold: int=65):
         self.fallback = fallback_response
         self.intents_directory = intents_directory
         self.intent_filename = intent_file
+=======
+    def __init__(self, fallback_response: str="Sorry, I don't understand that yet.", intents_directory: str="data/intents", intent_filename: Union[str, None]=None, user_data_directory: str="data/users", threshold: int=65):
+        self.fallback = fallback_response
+        self.intents_directory = intents_directory
+        self.intent_filename = intent_filename
+>>>>>>> 4618b300113bacbd3456e64abc0aeedfccf193dc
         self.user_data_directory = user_data_directory
         self.threshold = threshold
 
@@ -60,9 +67,20 @@ class ChatBot():
         """
 
         if all_files != False and self.intent_filename == None:
+<<<<<<< HEAD
             all_intent_files = [intent_file for intent_file in listdir(self.intents_directory) if intent_file.endswith(".json")]
 
         else:
+=======
+            all_f = True
+
+        else:
+            all_f = False
+
+        if all_f:
+            all_intent_files = [intent_file for intent_file in listdir(self.intents_directory) if intent_file.endswith(".json")]
+        else:
+>>>>>>> 4618b300113bacbd3456e64abc0aeedfccf193dc
             all_intent_files = [file]
 
         for intent_file in all_intent_files:
@@ -88,7 +106,11 @@ class ChatBot():
         possible_intents = list() # type: List[Dict(Intent)]
         same_ratio_intents = list() # type: List[Dict(Intent)]
 
+<<<<<<< HEAD
         for intent in self.__intent_generator(self.intent_filename):
+=======
+        for intent in self.__intent_generator():
+>>>>>>> 4618b300113bacbd3456e64abc0aeedfccf193dc
             for possible_query in intent.user:
                 ratio = strings_similarity(query, possible_query, threshold=self.threshold)
                 print(ratio)
@@ -104,7 +126,11 @@ class ChatBot():
 
             if same_ratio_intents:
                 highest_priority_intent = max(same_ratio_intents, key=lambda intent: intent.priority)
+<<<<<<< HEAD
                 print(highest_priority_intent)
+=======
+
+>>>>>>> 4618b300113bacbd3456e64abc0aeedfccf193dc
                 return highest_priority_intent
 
             else:
