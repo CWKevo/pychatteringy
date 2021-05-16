@@ -9,7 +9,7 @@ from pychatteringy.classes.chatbot import ChatBot
 
 
 if __name__ == "__main__":
-    chatbot = ChatBot(intents_directory="./data/intents", intent_file='similarity_test.json')
+    chatbot = ChatBot(intents_directory="./data/intents", intent_file="generated.json")
 
     while True:
     	x = chatbot.chat(__name__, input("You: "))

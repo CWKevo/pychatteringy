@@ -1,0 +1,6 @@
+[
+	{"user": ["Hi!"], "bot": ["Hello!"], "priority": 0.5, "conditions": {}, "actions": []},
+	{"user": ["How are you?"], "bot": ["I am good, thanks", "I've been better..."], "priority": 0.5, "conditions": {}, "actions": []},
+	{"user": ["Do you know where I can buy icecream?", "Where can I buy icecream?", "Is there an icecream shop nearby?", "Can you recommend me a good icecream shop?", "Any recommendation for an icecream shop?", "I can't find icecream shop..."], "bot": ["Sorry, I don't know any icecream shops nearby... :(", "I don't even know where is \"nearby\"...", "You could just Google it?", "I dunno, maybe on the main road?"], "priority": 0.5, "conditions": {}, "actions": []},
+	{"user": ["Thank you", "Thanks", "Thank you infinitely!", "That's great, thanks!", "THX!", "TY!"], "bot": ["No problem!", "You're welcome.", "Always happy to help :)"], "priority": 0.5, "conditions": {}, "actions": []}
+]

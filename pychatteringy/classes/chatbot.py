@@ -1,4 +1,4 @@
-from typing import Iterable, Iterator, Union, Generator, List
+from typing import Dict, Iterable, Iterator, Union, Generator, List
 
 import json
 from os import listdir
@@ -93,7 +93,6 @@ class ChatBot():
         for intent in self.__intent_generator(self.intent_filename):
             for possible_query in intent.user:
                 ratio = strings_similarity(query, possible_query, threshold=self.threshold)
-                print(ratio)
                 if ratio:
                     if intent not in possible_intents:
                         possible_intents.append({ "data": intent, "ratio": ratio })

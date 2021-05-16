@@ -17,7 +17,7 @@ def parse_all(directory: str="data/intents/unparsed", output_directory: str="dat
 
                 for intent_dict in l:
                     minified = json.dumps(intent_dict)
-                    minified_file.write(f"  {minified}{',' if intent_dict != l[-1] else ''}\n")
+                    minified_file.write(f"\t{minified}{',' if intent_dict != l[-1] else ''}\n")
 
                 minified_file.write("]\n")
 
