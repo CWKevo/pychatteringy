@@ -2,15 +2,8 @@
 # | for multiple possible messages.
 
 import json
+from pychatteringy.classes.chatbot import intent_template
 from pathlib import Path
-
-intent_template = {
-    "user": [],
-    "bot": [],
-    "priority": 0.5,
-    "conditions": {},
-    "actions": []
-}
 
 
 def intent_generator(out: str):

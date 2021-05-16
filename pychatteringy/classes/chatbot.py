@@ -1,15 +1,25 @@
 from typing import Dict, Iterable, Iterator, Union, Generator, List
-
 import json
 from os import listdir
 from re import match
 from random import choice
+from pathlib import Path
 from datetime import datetime, time
 
 from pychatteringy.classes.intents import Intent
+from pychatteringy.classes.variables import GenericVariables
 from pychatteringy.functions.string_operations import strings_similarity
 from pychatteringy.tools.intent_parser import parse_all
 from pychatteringy.functions.helpers import is_time_between
+
+
+intent_template = {
+    "user": [],
+    "bot": [],
+    "priority": 0.5,
+    "conditions": {},
+    "actions": []
+}
 
 
 class ChatBot():
@@ -18,11 +28,18 @@ class ChatBot():
 
     ### Parameters:
         - `fallback_response` - Response to return when no intents match.
+        - `log_failed_intents` - Whether or not should failed intents be logged to `intents_directory`/unmatched_intents.json.
+
+        - `check_for_repetitive_messages` - When `True`, the bot will check if the message is the same as last 3 queries from `session_cache`.
+        - `repetitive_messages` - A list of messages to reply when a repetitive message was detected. Defaults to 
+
+        - `threshold` - Integer tolerance used in intent matching (Levenshtein's scale). Can be from 0 to 100.
+
         - `intents_directory` - Path to your intents directory (without trailing slash). Defaults to `"intents"`.
         - `intent_filename` - File name of intent JSON data to obtain intents from. Defaults to `generic.json"`.
         If omitted, the bot checks for all JSON files in the intents directory.
+
         - `user_data_directory` - Path to directory (without trailing slash) where user data (sessions) will be saved.
-        - `threshold` - Integer tolerance used in intent matching (Levenshtein's scale). Can be from 0 to 100.
 
     The intent JSON data must look like this:
 
@@ -39,8 +56,13 @@ class ChatBot():
         brackets accross lines and then yielding valid JSON is pretty tough, so why not make both of our lives easier?)
     """
 
-    def __init__(self, fallback_response: str="Sorry, I don't understand that yet.", threshold: int=65, intents_directory: str="data/intents", intent_file: Union[str, None]=None, user_data_directory: str="data/users"):
+    def __init__(self, fallback_response: str="Sorry, I don't understand that yet.", log_failed_intents: bool=True, check_for_repetitive_messages: bool=True, repetitive_messages: List[str]=["I have already reacted to that?", "You are repeating yourself.", "I have already responded to that a while ago.", "Try to not repeat yourself..."], threshold: int=65, intents_directory: Union[str, Path]=Path(__file__ + "/../../../data/intents"), intent_file: Union[str, None]=None, user_data_directory: Union[str, Path]=Path(__file__ + "/../../../data/users")):
         self.fallback = fallback_response
+        self.log_failed_intents = log_failed_intents
+
+        self.repetitive = repetitive_messages
+        self.check_repetitive = check_for_repetitive_messages
+
         self.threshold = threshold
 
         self.intents_directory = intents_directory
@@ -84,35 +106,6 @@ class ChatBot():
 
                 except:
                     continue
-
-
-    def __get_possible_intent(self, query: str) -> Union[Intent, None]:
-        possible_intents = list() # type: List[Dict(Intent)]
-        same_ratio_intents = list() # type: List[Dict(Intent)]
-
-        for intent in self.__intent_generator(self.intent_filename):
-            for possible_query in intent.user:
-                ratio = strings_similarity(query, possible_query, threshold=self.threshold)
-                if ratio:
-                    if intent not in possible_intents:
-                        possible_intents.append({ "data": intent, "ratio": ratio })
-                else:
-                    continue
-
-        if possible_intents:
-            highest_ratio_intent = max(possible_intents, key=lambda intent: intent["ratio"])
-            same_ratio_intents.append(highest_ratio_intent["data"])
-
-            if same_ratio_intents:
-                highest_priority_intent = max(same_ratio_intents, key=lambda intent: intent.priority)
-
-                return highest_priority_intent
-
-            else:
-                return None
-
-        else:
-            return None
 
 
     def update_user_data(self, key, data, user: str) -> dict:
@@ -159,6 +152,35 @@ class ChatBot():
             return dict()
 
 
+    def __get_possible_intent(self, query: str) -> Union[Intent, None]:
+        possible_intents = list() # type: List[Dict(Intent)]
+        same_ratio_intents = list() # type: List[Intent]
+
+        for intent in self.__intent_generator(self.intent_filename):
+            for possible_query in intent.user:
+                ratio = strings_similarity(query, possible_query, threshold=self.threshold)
+                if ratio:
+                    if intent not in possible_intents:
+                        possible_intents.append({ "data": intent, "ratio": ratio })
+                else:
+                    continue
+
+        if possible_intents:
+            highest_ratio_intent = max(possible_intents, key=lambda intent: intent["ratio"])
+            same_ratio_intents.append(highest_ratio_intent["data"])
+
+            if same_ratio_intents:
+                highest_priority_intent = max(same_ratio_intents, key=lambda intent: intent.priority)
+
+                return highest_priority_intent
+
+            else:
+                return None
+
+        else:
+            return None
+
+
     def chat(self, user: str, query: str) -> str:
         """
             The main function that obtains a response to specific query.
@@ -168,31 +190,79 @@ class ChatBot():
             - `query` - Your message for the bot. Intents are matched by Levenshtein's scale.
         
         ### Example:
+
+        Request response once:
         ```
         chatbot = ChatBot()
-        response = chatbot.chat("clyde", "Hi!")
+        response = chatbot.chat(__file__, "Hi!")
         print(response)
+        ```
+
+        Permanent terminal chat (unless you do Ctrl + C):
+        ```
+        chatbot = ChatBot()
+
+        while True:
+            response = chatbot.chat(__file__, input("You: "))
+            print("Bot:", response)
         ```
         """
 
-        self.update_user_data("last_query", query, user=user)
+        if not self.session_cache.get(user, None):
+            self.session_cache[user] = dict()
+
+
+        last_queries = self.session_cache.get(user, {}).get("last_queries", [])
+        if self.check_repetitive:
+            if len(last_queries) < 1:
+                self.session_cache[user]["last_queries"] = list()
+
+            if len(last_queries) > 0:
+                for last_query in last_queries:
+                    if strings_similarity(query, last_query):
+                        return choice(self.repetitive)
+
+            if len(last_queries) >= 3:
+                self.session_cache[user]["last_queries"].pop(0)
+
+            self.session_cache[user]["last_queries"].append(query)
+
+
         intent = self.__get_possible_intent(query)
 
-        if not intent:
+        def __fallback() -> str:
+            if self.log_failed_intents:
+                failed_intent = intent_template.copy()
+                failed_intent["user"] = query
+
+                with open(f"{self.intents_directory}/unmatched_intents.json", "a") as unmatched_intents_file:
+                    unmatched_intents_file.write(f"{json.dumps(failed_intent)},\n")
+
             return self.fallback
 
+        if not intent:
+            return __fallback()
+
+
         response = choice(intent.bot)
+
 
         conditions = self.evaluate_intent_conditions(intent.conditions.if_raw, user=user)
         if conditions == False:
             if intent.conditions.else_responses:
                 response = choice(intent.conditions.else_responses)
             else:
-                return self.fallback
+                return __fallback()
+
 
         self.evaluate_intent_actions(user, intent.actions)
 
-        return response
+
+        if "{" and "}" in response:
+            generic_variables = GenericVariables()
+            return response.format_map(generic_variables.as_dict)
+        else:
+            return response
 
 
     def parse_intents(self, directory: str=None, output_directory: str=None):
@@ -216,6 +286,7 @@ class ChatBot():
         for condition in conditions:
             if "==" in condition:
                 c = condition.strip().lower().split("==")
+
 
                 if c[0] == "time":
                     if match(r"^(morning|early|beforenoon)$", c[1]):
@@ -252,6 +323,7 @@ class ChatBot():
 
                             solved.append(now == required)
 
+
                 elif c[0] == "user_data":
                     user_data = self.get_user_data(user)
 
@@ -269,6 +341,7 @@ class ChatBot():
                         else:
                             solved.append(False)
 
+
                 elif c[0] == "session_data":
                     if ":" in c[1]:
                         pair = c[1].split(":", maxsplit=1)
@@ -282,6 +355,7 @@ class ChatBot():
 
                         else:
                             return None
+
 
                     else:
                         data = self.session_cache.get(user, {}).get(c[1])
@@ -310,6 +384,7 @@ class ChatBot():
             if "=" in raw_action:
                 action = raw_action.strip().lower().split("=", maxsplit=1)
 
+
                 if action[0] == "user_data":
                     if ":" in action[1]:
                         pair = action[1].split(":", maxsplit=1)
@@ -318,21 +393,19 @@ class ChatBot():
                     else:
                         self.update_user_data(action[1], True, user=user)
 
+
                 elif action[0] == "session_data":
+                    if not self.session_cache.get(user, None):
+                        self.session_cache[user] = dict()
+
                     if ":" in action[1]:
                         pair = action[1].split(":", maxsplit=1)
-                        self.session_cache.update({
-                            user: {
-                                str(pair[0]): pair[1]
-                            }
-                        })
+                        self.session_cache[pair[0]] = pair[1]
 
                     else:
-                        self.session_cache.update({
-                            user: {
-                                str(action[1]): True
-                            }
-                        })
+                        self.session_cache[action[1]] = True
+
+
                 else:
                     return None
             else:

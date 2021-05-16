@@ -1,12 +1,15 @@
+from typing import Union
+
 import json
+from pathlib import Path
 from os import listdir
 
 
-def parse_all(directory: str="data/intents/unparsed", output_directory: str="data/intents"):
+def parse_all(directory: Union[str, Path]=Path(__file__ + "/../../../data/intents/unparsed"), output_directory: Union[str, Path]=Path(__file__ + "/../../../data/intents")):
     for file in listdir(directory):
-        minified_file = open(f"{output_directory}/{file}", "w")
-
         if file.endswith(".json"):
+            minified_file = open(f"{output_directory}/{file}", "w")
+
             with open(f"{directory}/{file}", "r") as unminified_file:
                 l = json.load(unminified_file) # type: list
 
@@ -26,8 +29,5 @@ def parse_all(directory: str="data/intents/unparsed", output_directory: str="dat
 
 
 if __name__ == "__main__":
-    parse_all(
-        directory="../../data/intents/unparsed",
-        output_directory="../../data/intents"
-    )
+    parse_all()
     print("Successfuly parsed all intents.")

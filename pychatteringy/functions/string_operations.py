@@ -28,4 +28,4 @@ if __name__ == "__main__":
     guesses = ["I have walked in a house today.", "I walked in the house!", "The house is mine...", "I walked in a house today!", "Today I walked?"]
 
     for guess in guesses:
-        print(f"{guess} - {are_strings_similar(correct, guess)}")
+        print(f"{guess} - {strings_similarity(correct, guess)}")
