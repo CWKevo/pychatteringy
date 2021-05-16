@@ -90,20 +90,30 @@ class ChatBot():
 
 
     def __get_possible_intent(self, query: str) -> Union[Intent, None]:
-        possible_intents = list() # type: List[Intent]
+        possible_intents = list() # type: List[Dict(Intent)]
+        same_ratio_intents = list() # type: List[Dict(Intent)]
 
         for intent in self.__intent_generator():
             for possible_query in intent.user:
-
-                if are_strings_similar(query, possible_query, threshold=self.threshold):
+                ratio = strings_similarity(query, possible_query, threshold=self.threshold)
+                print(ratio)
+                if ratio:
                     if intent not in possible_intents:
-                        possible_intents.append(intent)
+                        possible_intents.append({ "data": intent, "ratio": ratio })
                 else:
                     continue
 
         if possible_intents:
-            highest_priority_intent = max(possible_intents, key=lambda intent: intent.priority)
-            return highest_priority_intent
+            highest_ratio_intent = max(possible_intents, key=lambda intent: intent["ratio"])
+            prioritized_intents.append(highest_ratio_intent["data"])
+
+            if max_ratio_intents:
+                highest_priority_intent = max(max_ratio_intents, key=lambda intent: intent.priority)
+
+                return highest_priority_intent
+
+            else:
+                return None
 
         else:
             return None
