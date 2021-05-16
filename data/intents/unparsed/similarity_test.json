@@ -1,0 +1,30 @@
+[
+    {
+        "user": ["Good morning.", "Morning."],
+        "bot": ["Morning, but with priority."],
+        "priority": 0.7,
+        "conditions": {},
+        "actions": []
+    },
+    {
+        "user": ["Good morning.", "Morning."],
+        "bot": ["Morning."],
+        "priority": 0.5,
+        "conditions": {},
+        "actions": []
+    },
+    {
+        "user": ["Hello.", "Hi."],
+        "bot": ["Hello!"],
+        "priority": 0.5,
+        "conditions": {},
+        "actions": []
+    },
+    {
+        "user": ["Help!"],
+        "bot": ["What do you need to help with?"],
+        "priority": 0.5,
+        "conditions": {},
+        "actions": []
+    }
+]

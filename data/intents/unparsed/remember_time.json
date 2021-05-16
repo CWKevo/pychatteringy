@@ -1,0 +1,12 @@
+[
+    {
+        "user": ["What is the time?", "What's the current time?"],
+        "bot": ["The current time is %(current_time)s"],
+        "priority": 1.0,
+        "conditions": {
+            "if": ["user_data==has_asked_for_time:False"],
+            "else": ["You have already asked me what time it is."]
+        },
+        "actions": ["user_data=has_asked_for_time"]
+    }
+]
