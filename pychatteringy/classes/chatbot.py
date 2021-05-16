@@ -105,7 +105,7 @@ class ChatBot():
 
         if possible_intents:
             highest_ratio_intent = max(possible_intents, key=lambda intent: intent["ratio"])
-            prioritized_intents.append(highest_ratio_intent["data"])
+            same_ratio_intents.append(highest_ratio_intent["data"])
 
             if max_ratio_intents:
                 highest_priority_intent = max(max_ratio_intents, key=lambda intent: intent.priority)
