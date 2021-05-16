@@ -7,7 +7,7 @@ from random import choice
 from datetime import datetime, time
 
 from pychatteringy.classes.intents import Intent
-from pychatteringy.functions.string_operations import are_strings_similar
+from pychatteringy.functions.string_operations import strings_similarity
 from pychatteringy.tools.intent_parser import parse_all
 from pychatteringy.functions.helpers import is_time_between
 
