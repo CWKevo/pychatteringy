@@ -5,8 +5,10 @@ ROOT = Path(__file__).parent.absolute()
 sys.path.append(ROOT)
 
 
+from pychatteringy.classes.chatbot import ChatBot
+
+
 if __name__ == "__main__":
-    from pychatteringy.classes.chatbot import ChatBot
     chatbot = ChatBot(intents_directory="./data/intents")
 
     while True:
