@@ -1,7 +1,7 @@
 [
     {
         "user": ["Good morning.", "Morning."],
-        "bot": ["Morning. Have you slept well?"],
+        "bot": ["Morning."],
         "priority": 0.7,
         "conditions": {
             "if": ["time==morning"],
