@@ -2,4 +2,4 @@
 __pycache__
 poetry.lock
 
-data/users
+data/users/*
