@@ -1,4 +1,4 @@
 [
-  {"user": ["Good morning.", "Morning."], "bot": ["Morning. Have you slept well?"], "priority": 0.7, "conditions": {"if": ["time==morning"], "else": ["It's not morning for me, but good morning to you!", "Not a morning there :("]}, "actions": []},
+  {"user": ["Good morning.", "Morning."], "bot": ["Morning."], "priority": 0.7, "conditions": {"if": ["time==morning"], "else": ["It's not morning for me, but good morning to you!", "Not a morning there :("]}, "actions": []},
   {"user": ["Hi!", "Hello.", "Hola!", "Ahoy!", "Good day"], "bot": ["Hello!", "Hi! Nice to see you again!", "Hello!"], "priority": 0.8, "conditions": {"if": ["user_data==has_talked"], "else": ["Hello, we haven't talked before yet!"]}, "actions": ["user_data=has_talked"]}
 ]
