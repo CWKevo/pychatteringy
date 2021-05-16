@@ -1,3 +1,5 @@
+from typing import Union
+
 from string import punctuation
 from fuzzywuzzy import fuzz
 
@@ -12,13 +14,13 @@ def string_ratio(correct: str, attempt: str) -> float:
     return fuzz.ratio(s1.lower(), s2.lower())
 
 
-def are_strings_similar(correct: str, attempt: str, threshold: int=65) -> bool:
+def strings_similarity(correct: str, attempt: str, threshold: int=65) -> Union[int, None]:
     ratio = string_ratio(correct, attempt)
 
     if ratio >= threshold:
-        return True
+        return ratio
     else:
-        return False
+        return None
 
 
 if __name__ == "__main__":
