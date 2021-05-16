@@ -26,4 +26,8 @@ def parse_all(directory: str="data/intents/unparsed", output_directory: str="dat
 
 
 if __name__ == "__main__":
-    parse_all()
+    parse_all(
+        directory="../../data/intents/unparsed",
+        output_directory="../../data/intents"
+    )
+    print("Successfuly parsed all intents.")
