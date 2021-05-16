@@ -1,13 +1,13 @@
 [
     {
-        "user": ["Good morning.", "Morning."],
+        "user": ["Good morning."],
         "bot": ["Morning, but with priority."],
         "priority": 0.7,
         "conditions": {},
         "actions": []
     },
     {
-        "user": ["Good morning.", "Morning."],
+        "user": ["Morning."],
         "bot": ["Morning."],
         "priority": 0.5,
         "conditions": {},
