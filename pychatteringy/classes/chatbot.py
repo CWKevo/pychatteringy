@@ -15,6 +15,7 @@ from pychatteringy.functions.helpers import is_time_between
 
 intent_template = {
     "id": 0,
+    "context": None,
     "user": [],
     "bot": [],
     "priority": 0.5,

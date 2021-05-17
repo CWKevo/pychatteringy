@@ -6,6 +6,7 @@ from pathlib import Path
 
 intent_template = {
     "id": 0,
+    "context": None,
     "user": [],
     "bot": [],
     "priority": 0.5,
