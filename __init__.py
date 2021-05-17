@@ -12,5 +12,5 @@ if __name__ == "__main__":
     chatbot = ChatBot()
 
     while True:
-    	x = chatbot.chat(__name__, input("You: "))
+    	x = chatbot.chat(input(f"{chatbot.user}: "))
     	print("Bot:", x)

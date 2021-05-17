@@ -3,6 +3,11 @@ from typing import Union, List
 
 class Intent(dict):
     @property
+    def id(self) -> int:
+        return self.get("id", hash(str().join(self.user) + str().join(self.bot)))
+
+
+    @property
     def user(self) -> List[str]:
         return self.get("user", list())
 

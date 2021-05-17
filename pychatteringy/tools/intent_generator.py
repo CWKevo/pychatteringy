@@ -1,9 +1,17 @@
 # When you are lonely and you like having conversations with yourself.
-# | for multiple possible messages.
+# Or you want to easily generate intents...
 
 import json
-from pychatteringy.classes.chatbot import intent_template
 from pathlib import Path
+
+intent_template = {
+    "id": 0,
+    "user": [],
+    "bot": [],
+    "priority": 0.5,
+    "conditions": {},
+    "actions": []
+}
 
 
 def intent_generator(out: str):
@@ -14,12 +22,31 @@ def intent_generator(out: str):
             intent_file.write("[\n")
             intent = intent_template.copy()
 
+            current_intent_id = 0
             while True:
-                message = input("User says: ")
-                intent["user"] = message.split("|")
+                def __user():
+                    message = input("User says: ")
 
-                message = input("Bot responds with: ")
-                intent["bot"] = message.split("|")
+                    if len(message) <= 0:
+                        print("Please, say something.")
+                        return __user()
+
+                    intent["user"] = message.split("|")
+
+                def __bot():
+                    message = input("Bot responds with: ")
+
+                    if len(message) <= 0:
+                            print("Please, say something.")
+                            return __bot()
+
+                    intent["bot"] = message.split("|")
+
+                __user()
+                __bot()
+
+                current_intent_id += 1
+                intent["id"] = current_intent_id
 
                 intent_file.write(f"\t{json.dumps(intent)},\n")
 
@@ -36,15 +63,23 @@ def intent_generator_from_file(from_file: str, output: str):
 
     intent = intent_template.copy()
 
+    current_intent_id = 0
     for line in open(from_file, "r"):
         x = line.split("=")
         pair = [y.strip() for y in x]
+
+        if pair[0] == "context":
+            intent["context"] = pair[1]
 
         if pair[0] == "user":
             intent["user"] = pair[1].split("|")
 
         elif pair[0] == "bot":
             intent["bot"] = pair[1].split("|")
+
+            current_intent_id += 1
+            intent["id"] = current_intent_id
+
             out.write(f"\t{json.dumps(intent)},\n")
 
             intent = intent_template.copy() # re-init/"clear"
@@ -59,7 +94,7 @@ def intent_generator_from_file(from_file: str, output: str):
 
 
 def main():
-    print(f"""
+    print(f"""Long introduction time...
         Welcome to the intent generator! This CLI tool allows you to quickly create new intents for "pyChatteringy" package.
 
         You have option to either write messages in terminal directly (1), or import them from a file (2).
@@ -76,11 +111,12 @@ def main():
             format of the file must be the following:
 
             {'-' * 35}
-            user = user message
-            bot = bot response
-            user = user message|another possible message
-            bot = bot response|another possible response
-            # Spaces around "=" are stripped.
+            context = ducks
+            user    = Do you like ducks?
+            bot     = Yes, I love them!
+            user    = user message|another possible message
+            bot     = bot response|another possible response
+            # Spaces around "=" are ignored.
             {'-' * 35}
         
             There must never be same message authors twice in a row, eg.:

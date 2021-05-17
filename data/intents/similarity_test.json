@@ -1,6 +1,6 @@
 [
-	{"user": ["Good morning."], "bot": ["Morning, but with priority."], "priority": 0.7, "conditions": {}, "actions": []},
-	{"user": ["Morning."], "bot": ["Morning."], "priority": 0.5, "conditions": {}, "actions": []},
-	{"user": ["Hello.", "Hi."], "bot": ["Hello!"], "priority": 0.5, "conditions": {}, "actions": []},
-	{"user": ["Help!"], "bot": ["What do you need to help with?"], "priority": 0.5, "conditions": {}, "actions": []}
+	{"id": 1, "user": ["Good morning."], "bot": ["Morning, but with priority."], "priority": 0.7, "conditions": {}, "actions": []},
+	{"id": 2, "user": ["Morning."], "bot": ["Morning."], "priority": 0.5, "conditions": {}, "actions": []},
+	{"id": 3, "user": ["Hello.", "Hi."], "bot": ["Hello!"], "priority": 0.5, "conditions": {}, "actions": []},
+	{"id": 4, "user": ["Help!"], "bot": ["What do you need to help with?"], "priority": 0.5, "conditions": {}, "actions": []}
 ]

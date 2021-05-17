@@ -1,3 +1,3 @@
 [
-	{"user": ["What is the time?", "What's the current time?"], "bot": ["The current time is {time}"], "priority": 1.0, "conditions": {"if": ["session_data==has_asked_for_time:False"], "else": ["You have already asked me what time it is."]}, "actions": ["session_data=has_asked_for_time"]}
+	{"id": 1, "user": ["What is the time?", "What's the current time?"], "bot": ["The current time is {generic.time}"], "priority": 1.0, "conditions": {"if": ["session_data==has_asked_for_time:False"], "else": ["You have already asked me what time it is. But whatever - it's {generic.time} now."]}, "actions": ["session_data=has_asked_for_time"]}
 ]

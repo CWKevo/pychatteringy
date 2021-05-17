@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, Iterator, Union, Generator, List
+from typing import Dict, Iterable, Iterator, Tuple, Union, Generator, List
 import json
 from os import listdir
 from re import match
@@ -14,6 +14,7 @@ from pychatteringy.functions.helpers import is_time_between
 
 
 intent_template = {
+    "id": 0,
     "user": [],
     "bot": [],
     "priority": 0.5,
@@ -27,10 +28,14 @@ class ChatBot():
         Initializes a new ChatBot instance.
 
     ### Parameters:
+        - `user` - A custom username (used for bot to know who is he talking to - should be unique). This can be overwritten in the actual `chat()` function.
+
         - `fallback_response` - Response to return when no intents match.
         - `log_failed_intents` - Whether or not should failed intents be logged to `intents_directory`/unmatched_intents.json.
 
-        - `check_for_repetitive_messages` - When `True`, the bot will check if the message is the same as last 3 queries from `session_cache`.
+        - `check_for_repetitive_messages` - When `True`, the bot will check if the current matched intent ID is the same as last 3 intent IDs from `session_cache`.
+        If you do not need this, By default this is `False`, as it slows things a bit and doesn't always produce a nice user experience. Unless you want some more self-aware,
+        realistic and toxic bot, I recommend to leave this to `False`.
         - `repetitive_messages` - A list of messages to reply when a repetitive message was detected. Defaults to 
 
         - `threshold` - Integer tolerance used in intent matching (Levenshtein's scale). Can be from 0 to 100.
@@ -40,6 +45,8 @@ class ChatBot():
         If omitted, the bot checks for all JSON files in the intents directory.
 
         - `user_data_directory` - Path to directory (without trailing slash) where user data (sessions) will be saved.
+        - `max_repetitive_cache` - Maximum number of intent IDs to cache when checking for repetitive messages. If ID of the current intent query is found in this cache,
+        then the message can be rejected by bot as "repetitive" (if `check_for_repetitive_messages` is `True`). 
 
     The intent JSON data must look like this:
 
@@ -56,7 +63,9 @@ class ChatBot():
         brackets accross lines and then yielding valid JSON is pretty tough, so why not make both of our lives easier?)
     """
 
-    def __init__(self, fallback_response: str="Sorry, I don't understand that yet.", log_failed_intents: bool=True, check_for_repetitive_messages: bool=True, repetitive_messages: List[str]=["I have already reacted to that?", "You are repeating yourself.", "I have already responded to that a while ago.", "Try to not repeat yourself..."], threshold: int=65, intents_directory: Union[str, Path]=Path(__file__ + "/../../../data/intents"), intent_file: Union[str, None]=None, user_data_directory: Union[str, Path]=Path(__file__ + "/../../../data/users")):
+    def __init__(self, user: str="Fred", fallback_response: str="Sorry, I don't understand that yet.", log_failed_intents: bool=True, check_for_repetitive_messages: bool=False, repetitive_messages: List[str]=["I have already reacted to that?", "You are repeating yourself.", "I have already responded to that a while ago.", "Try to not repeat yourself..."], threshold: int=65, intents_directory: Union[str, Path]=Path(__file__ + "/../../../data/intents"), intent_file: Union[str, None]=None, user_data_directory: Union[str, Path]=Path(__file__ + "/../../../data/users"), max_repetitive_cache: int=3):
+        self.user = user
+
         self.fallback = fallback_response
         self.log_failed_intents = log_failed_intents
 
@@ -70,10 +79,11 @@ class ChatBot():
 
         self.user_data_directory = user_data_directory
 
+        self.max_repetitive_cache = max_repetitive_cache
         self.session_cache = dict()
 
 
-    def __intent_generator(self, file: str="generic.json", all_files: Union[bool, None]=None) -> Generator[Intent, None, None]:
+    def __intent_generator(self, file: str=None, all_files: Union[bool, None]=None) -> Generator[Tuple[str, Intent], None, None]:
         """
             Yields intents from minified intents JSON file.
 
@@ -83,7 +93,8 @@ class ChatBot():
             If omitted, this is set based on whether or not `self.intent_filename` is set.
         """
 
-        if all_files != False and self.intent_filename == None:
+
+        if (all_files != False and self.intent_filename == None) or (file == None):
             all_intent_files = [intent_file for intent_file in listdir(self.intents_directory) if intent_file.endswith(".json")]
 
         else:
@@ -99,8 +110,7 @@ class ChatBot():
                         intent_json = json.loads(raw) # type: dict
                         intent = Intent(intent_json)
 
-                        yield intent
-
+                        yield intent_file, intent
                     else:
                         continue
 
@@ -152,27 +162,29 @@ class ChatBot():
             return dict()
 
 
-    def __get_possible_intent(self, query: str) -> Union[Intent, None]:
-        possible_intents = list() # type: List[Dict(Intent)]
-        same_ratio_intents = list() # type: List[Intent]
+    def __get_possible_intent(self, query: str) -> Union[Tuple[str, Intent], None]:
+        possible_intents = list() # type: List[Tuple[str, Dict]]
+        same_ratio_intents = list() # type: List[Tuple[str, Intent]]
 
-        for intent in self.__intent_generator(self.intent_filename):
+        for intent_data in self.__intent_generator(self.intent_filename):
+            intent = intent_data[1] # type: Intent
+
             for possible_query in intent.user:
                 ratio = strings_similarity(query, possible_query, threshold=self.threshold)
                 if ratio:
                     if intent not in possible_intents:
-                        possible_intents.append({ "data": intent, "ratio": ratio })
+                        possible_intents.append({ "file": intent_data[0], "data": intent, "ratio": ratio })
                 else:
                     continue
 
         if possible_intents:
             highest_ratio_intent = max(possible_intents, key=lambda intent: intent["ratio"])
-            same_ratio_intents.append(highest_ratio_intent["data"])
+            same_ratio_intents.append(highest_ratio_intent)
 
             if same_ratio_intents:
-                highest_priority_intent = max(same_ratio_intents, key=lambda intent: intent.priority)
+                highest_priority_intent = max(same_ratio_intents, key=lambda intent: intent["data"].priority)
 
-                return highest_priority_intent
+                return highest_priority_intent["file"], highest_priority_intent["data"]
 
             else:
                 return None
@@ -181,7 +193,7 @@ class ChatBot():
             return None
 
 
-    def chat(self, user: str, query: str) -> str:
+    def chat(self, query: str, user: str=None) -> str:
         """
             The main function that obtains a response to specific query.
         
@@ -208,44 +220,56 @@ class ChatBot():
         ```
         """
 
+        if not user:
+            user = self.user
+
         if not self.session_cache.get(user, None):
-            self.session_cache[user] = dict()
+            self.session_cache[user] = dict(_messages=0)
 
+        self.session_cache[user]["_messages"] += 1
 
-        last_queries = self.session_cache.get(user, {}).get("last_queries", [])
-        if self.check_repetitive:
-            if len(last_queries) < 1:
-                self.session_cache[user]["last_queries"] = list()
-
-            if len(last_queries) > 0:
-                for last_query in last_queries:
-                    if strings_similarity(query, last_query):
-                        return choice(self.repetitive)
-
-            if len(last_queries) >= 3:
-                self.session_cache[user]["last_queries"].pop(0)
-
-            self.session_cache[user]["last_queries"].append(query)
-
-
-        intent = self.__get_possible_intent(query)
 
         def __fallback() -> str:
             if self.log_failed_intents:
                 failed_intent = intent_template.copy()
-                failed_intent["user"] = query
 
-                with open(f"{self.intents_directory}/unmatched_intents.json", "a") as unmatched_intents_file:
+                failed_intent["id"] = self.session_cache.get(user, {}).get("_messages", 0)
+                failed_intent["user"] = list(query)
+
+                with open(f"{self.intents_directory}/unmatched_intents.txt", "a") as unmatched_intents_file:
                     unmatched_intents_file.write(f"{json.dumps(failed_intent)},\n")
 
             return self.fallback
 
-        if not intent:
-            return __fallback()
 
+        intent_data = self.__get_possible_intent(query)
+
+        if not intent_data or not intent_data[1] or len(intent_data[1].bot) <= 0:
+            return __fallback()
+        else:
+            intent = intent_data[1] # type: Intent
+
+        print(self.session_cache)
+
+        if self.check_repetitive:
+            self.session_cache["_current_intent_file"] = intent_data[0]
+            recent_intents = self.session_cache.get(user, {}).get("_recent_intents", [])
+            current_intent_file = self.session_cache.get("_current_intent_file", __name__)
+
+            if len(recent_intents) < 1:
+                self.session_cache[user]["_recent_intents"] = list()
+
+            if len(recent_intents) >= self.max_repetitive_cache:
+                self.session_cache[user]["_recent_intents"].pop(0)
+
+            if len(recent_intents) > 0:
+                for intent_id in recent_intents:
+                    if (intent_id == f"{current_intent_file}-{intent.id}"):
+                        return choice(self.repetitive)
+
+            self.session_cache[user]["_recent_intents"].append(f"{current_intent_file}-{intent.id}")
 
         response = choice(intent.bot)
-
 
         conditions = self.evaluate_intent_conditions(intent.conditions.if_raw, user=user)
         if conditions == False:
@@ -254,13 +278,16 @@ class ChatBot():
             else:
                 return __fallback()
 
-
         self.evaluate_intent_actions(user, intent.actions)
 
-
         if "{" and "}" in response:
-            generic_variables = GenericVariables()
-            return response.format_map(generic_variables.as_dict)
+            all_variables = {
+                "generic": GenericVariables().as_dict,
+                "current_user": self.session_cache.get("user", {})
+            }
+
+            print(all_variables)
+            return response.format_map(all_variables)
         else:
             return response
 

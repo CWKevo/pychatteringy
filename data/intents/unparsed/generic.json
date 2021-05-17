@@ -1,5 +1,6 @@
 [
     {
+        "id": 1,
         "user": ["Good morning.", "Morning."],
         "bot": ["Morning."],
         "priority": 0.7,
@@ -10,13 +11,14 @@
         "actions": []
     },
     {
+        "id": 2,
         "user": ["Hi!", "Hello.", "Hola!", "Ahoy!", "Good day"],
-        "bot": ["Hello!", "Hi! Nice to see you again!", "Hello!"],
+        "bot": ["Hi! Nice to see you again :)"],
         "priority": 0.8,
         "conditions": {
-            "if": ["user_data==has_talked"],
+            "if": ["user_data==has_greeted"],
             "else": ["Hello, we haven't talked before yet!"]
         },
-        "actions": ["user_data=has_talked"]
+        "actions": ["user_data=has_greeted"]
     }
 ]
