@@ -3,3 +3,4 @@ __pycache__
 poetry.lock
 
 data/users/**/*.json
+unmatched_intents.txt
