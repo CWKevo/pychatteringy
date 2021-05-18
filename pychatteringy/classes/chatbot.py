@@ -250,8 +250,6 @@ class ChatBot():
         else:
             intent = intent_data[1] # type: Intent
 
-        print(self.session_cache)
-
         if self.check_repetitive:
             self.session_cache["_current_intent_file"] = intent_data[0]
             recent_intents = self.session_cache.get(user, {}).get("_recent_intents", [])
