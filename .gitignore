@@ -1,6 +1,13 @@
+# Crap:
 .vscode/
 __pycache__
 poetry.lock
 
+# Builds:
+build/
+dist/
+*.egg-info/
+
+# pyChatteringy:
 data/users/**/*.json
 unmatched_intents.txt
