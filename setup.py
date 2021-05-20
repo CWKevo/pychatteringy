@@ -9,13 +9,12 @@ setup(
     packages = ['pychatteringy', 'pychatteringy.classes', 'pychatteringy.functions', 'pychatteringy.tools'],
     include_package_data=True,
 
-    description = "Create very simple, minimalistic Python chatbots by using JSON",
+    description = "Create very simple, minimalistic Python 3 chatbots by using JSON",
     long_description=long_description,
     long_description_content_type='text/markdown',
 
-    version = 'v0.0.1_alpha',
+    version = 'v0.0.2_alpha',
     license='GPLv3',
-    description = 'Create simple chatbots by using JSON & Python 3 only.',
     keywords = ['python', 'python3', 'chatbot', 'bot', 'framework', 'ai', 'json', 'intents', 'conversation'],
 
     author = 'Kevo',

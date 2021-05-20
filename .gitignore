@@ -9,5 +9,5 @@ dist/
 *.egg-info/
 
 # pyChatteringy:
-data/users/**/*.json
+**/*/users/**/*.json
 unmatched_intents.txt
