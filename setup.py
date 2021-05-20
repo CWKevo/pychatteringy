@@ -13,7 +13,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
 
-    version = 'v0.0.2_alpha',
+    version = 'v0.0.3_alpha',
     license='GPLv3',
     keywords = ['python', 'python3', 'chatbot', 'bot', 'framework', 'ai', 'json', 'intents', 'conversation'],
 
