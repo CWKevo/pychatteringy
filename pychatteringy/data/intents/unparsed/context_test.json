@@ -12,12 +12,13 @@
     },
     {
         "id": 2,
+        "goto_only": true,
         "user": {
             "yes": ["Yes.", "Yes, it is."],
             "no": ["No.", "No, it isn't"]
         },
         "bot": {
-            "yes": ["Good."],
+            "yes": ["Good.", "Vewi gud."],
             "no": ["That's too bad, I though that you were going to resist arrest."]
         },
         "priority": 0.5,

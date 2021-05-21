@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, Iterator, Tuple, Union, Generator, List
+from typing import Iterable, Iterator, Union, Generator, List
 import json
 from os import listdir
 from re import match
@@ -84,7 +84,7 @@ class ChatBot():
         self.session_cache = dict()
 
 
-    def __intent_generator(self, file: str=None, all_files: Union[bool, None]=None) -> Generator[Intent, None, None]:
+    def __intent_generator(self, file: str=None, all_files: Union[bool, None]=None, include_goto_only_intents: bool=False) -> Generator[Intent, None, None]:
         """
             Yields intents from minified intents JSON file.
 
@@ -102,23 +102,31 @@ class ChatBot():
             all_intent_files = [file]
 
         for intent_file in all_intent_files:
-            for line in open(f"{self.intents_directory}/{intent_file}", "r", encoding="UTF-8"):
-                try:
-                    raw = line.strip().rstrip(",") # Remove new lines & trailing "," for json.loads() to work
+            loc = f"{self.intents_directory}/{intent_file}"
+            for line in open(loc, "r", encoding="UTF-8"):
+                raw = line.strip().rstrip(",") # Remove new lines & trailing "," for json.loads() to work
 
-                    # Skip opening and closing list brackets:
-                    if (raw != "[" and raw != "]"):
+                # Skip opening and closing list brackets (first & last line):
+                if (raw != "[" and raw != "]"):
+                    try:
                         intent_dict = dict()
                         intent_dict["data"] = json.loads(raw)
-                        intent_dict["file"] = intent_file.replace(".json", "")
+                        intent_dict["file"] = intent_file
                         intent = Intent(intent_dict)
+
+                        if intent.goto_only:
+                            if include_goto_only_intents:
+                                yield intent
+                            else:
+                                continue
 
                         yield intent
 
-                    else:
+                    except Exception as e:
+                        print(f"Failure in {loc}: {e}")
                         continue
 
-                except:
+                else:
                     continue
 
 
@@ -166,29 +174,29 @@ class ChatBot():
             return dict()
 
 
-    def __get_possible_intent(self, query: str) -> Union[Tuple[str, Intent], None]:
-        possible_intents = list() # type: List[Tuple[str, Dict]]
-        same_ratio_intents = list() # type: List[Tuple[str, Intent]]
+    def __get_possible_intent(self, query: str) -> Union[Intent, None]:
+        possible_intents = list() # type: List[Intent]
+        same_ratio_intents = list() # type: List[Intent]
 
-        for intent_data in self.__intent_generator(self.intent_filename):
-            intent = intent_data[1] # type: Intent
-
+        for intent in self.__intent_generator(self.intent_filename):
             for possible_query in intent.user:
                 ratio = strings_similarity(query, possible_query, threshold=self.threshold)
                 if ratio:
                     if intent not in possible_intents:
-                        possible_intents.append({ "file": intent_data[0], "data": intent, "ratio": ratio })
+                        intent["ratio"] = ratio
+                        possible_intents.append(intent)
                 else:
                     continue
 
+
         if possible_intents:
-            highest_ratio_intent = max(possible_intents, key=lambda intent: intent["ratio"])
+            highest_ratio_intent = max(possible_intents, key=lambda intent: intent.ratio)
             same_ratio_intents.append(highest_ratio_intent)
 
             if same_ratio_intents:
-                highest_priority_intent = max(same_ratio_intents, key=lambda intent: intent["data"].priority)
+                highest_priority_intent = max(same_ratio_intents, key=lambda intent: intent.priority)
 
-                return highest_priority_intent["file"], highest_priority_intent["data"]
+                return highest_priority_intent
 
             else:
                 return None
@@ -197,13 +205,10 @@ class ChatBot():
             return None
 
 
-    def __get_intent_by_id(self, id: int) -> Union[Intent, None]:
-        for intent in self.__intent_generator(self.intent_filename):
-            if intent.id == id:
+    def __get_intent_by_id(self, id: str) -> Union[Intent, None]:
+        for intent in self.__intent_generator(include_goto_only_intents=True):
+            if intent.id == str(id):
                 return intent
-
-            else:
-                continue
 
         return None
 
@@ -244,7 +249,6 @@ class ChatBot():
 
         self.session_cache[user]["_messages"] += 1
 
-
         # Functions:
         def __fallback() -> str:
             if self.log_failed_intents:
@@ -259,18 +263,7 @@ class ChatBot():
             return self.fallback
 
 
-        def __get_intent() -> Intent:
-            current_intent_id = self.session_cache.get("user", {}).get("_current_intent_id", None)
-
-            if current_intent_id == None:
-                intent = self.__get_possible_intent(query)
-            else:
-                intent = self.__get_intent_by_id(current_intent_id)
-            
-            return intent
-
-
-        def __check_repetitive() -> Union[str, None]:
+        def __check_repetitive(intent: Intent) -> Union[str, None]:
             self.session_cache["_current_intent_file"] = intent.file
             recent_intents = self.session_cache.get(user, {}).get("_recent_intents", [])
 
@@ -292,7 +285,7 @@ class ChatBot():
             return None
 
 
-        def __evaluate() -> Union[str, None]:
+        def __evaluate(intent: Intent) -> Union[str, None]:
             self.__evaluate_intent_actions(user, intent.actions)
 
             conditions = self.__evaluate_intent_conditions(intent.conditions.if_raw, user=user)
@@ -301,28 +294,100 @@ class ChatBot():
                     return choice(intent.conditions.else_responses)
                 else:
                     return __fallback()
+
             else:
                 return None
 
 
-        # Check if intent repeats:
-        if self.check_repetitive:
-            repetitive = __check_repetitive()
+        def __get_response(intent: Intent) -> str:
+            # Check if intent repeats:
+            if self.check_repetitive:
+                repetitive = __check_repetitive(intent)
 
-            if repetitive != None:
-                return repetitive
-
-
-        # Get intent, fallback if there is no intent or bot response(s):
-        intent = __get_intent()
-        if not intent or len(intent.bot) <= 0:
-            return __fallback()
+                if repetitive != None:
+                    return repetitive
 
 
-        # Evaluate conditions & actions:
-        response = __evaluate()
-        if response == None:
-            response = choice(intent.bot)
+            # If there are multi-responses:
+            if isinstance(intent.user, dict) and isinstance(intent.bot, dict):
+                response_id = None
+
+                for possible_response_id, responses in intent.user.items():
+                    for response in responses:
+                        ratio = strings_similarity(query, response, threshold=self.threshold)
+                        if ratio and ratio >= self.threshold:
+                            response_id = possible_response_id
+
+                for possible_response_id, responses in intent.bot.items():
+                    if possible_response_id == response_id:
+                        response = choice(responses)
+                        return response
+
+                return __fallback()
+
+
+            elif isinstance(intent.user, list) and isinstance(intent.bot, list):
+                # Evaluate conditions & actions:
+                response = __evaluate(intent)
+                if response == None:
+                    response = choice(intent.bot)
+                
+                return response
+
+
+            else:
+                print(f"[pyChatteringy] Invalid intent JSON response(s): {intent.id}")
+                return __fallback()
+
+
+        def __evaluate_response(intent: Intent) -> str:
+            if not intent or len(intent.bot) <= 0:
+                response = __fallback()
+
+            else:
+                response = __get_response(intent)
+
+            if "=" in response:
+                action = response.strip().lower().split("=")
+
+                if action[0] == "goto":
+                    if ":" in action[1]:
+                        # Split intent ID and goto pre-bot response / question:
+                        pair = action[1].split(":", maxsplit=1)
+
+                        # AKA. If intent path is specified:
+                        if "-" in pair[0]:
+                            self.session_cache[user]["_goto_intent_id"] = pair[0]
+
+                        # If file path isn't specified, look for goto intent in the current intent file instead:
+                        else:
+                            self.session_cache[user]["_goto_intent_id"] = f'{intent.file}-{pair[0]}'
+
+                        # Response is pre-bot's response / bot's question:
+                        return pair[1]
+
+                    else:
+                        print(f"[pyChatteringy] Couldn't evaluate response action for: {intent.id}")
+                        return response
+
+            else:
+                return response
+
+
+        # Get intent and response.
+        # If we are supposed to "go to" a specific intent from the last intent in the cache,
+        # go to it. Else, do normal evaluation instead.
+        print(self.session_cache)
+        goto_intent_id = self.session_cache.get(user, {}).get("_goto_intent_id", None)
+
+        if goto_intent_id == None:
+            intent = self.__get_possible_intent(query)
+
+        else:
+            intent = self.__get_intent_by_id(goto_intent_id)
+            self.session_cache[user]["_goto_intent_id"] = None
+
+        response = __evaluate_response(intent)
 
 
         # If response is formatabble, format it:

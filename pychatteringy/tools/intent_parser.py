@@ -5,7 +5,7 @@ from pathlib import Path
 from os import listdir
 
 
-def parse_all(directory: Union[str, Path]=Path(__file__ + "/../../../data/intents/unparsed"), output_directory: Union[str, Path]=Path(__file__ + "/../../../data/intents")):
+def parse_all(directory: Union[str, Path]=Path(__file__ + "/../../data/intents/unparsed"), output_directory: Union[str, Path]=Path(__file__ + "/../../data/intents")):
     for file in listdir(directory):
         if file.endswith(".json"):
             minified_file = open(f"{output_directory}/{file}", "w")
