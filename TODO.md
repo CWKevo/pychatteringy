@@ -17,3 +17,6 @@
 Contexts were the hardest thing to implement... But the result is worth it! I am happy!
 I don't really plan to make machine learning or advanced contextual engine. Maybe in the future? But for now,
 I feel like this is a proof of concept for something simple, that can eventually become very powerful.
+
+Tools:
+- [ ] Intent generator can understand contexts (goto methods) and multiresponses. This will be another hard thing to implement, because - how will the syntax even look like? I feel like this one is possible, but will be another hard thing to do.
