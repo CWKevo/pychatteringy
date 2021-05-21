@@ -18,7 +18,8 @@
 - [📝 Table of Contents](#-table-of-contents)
 - [🧐 About <a id="about"></a>](#-about-)
 - [🏁 Installation <a id="installation"></a>](#-installation-)
-  - [Prerequisites](#prerequisites)
+  - [🚦 Prerequisites](#-prerequisites)
+  - [🩹 Updating](#-updating)
 - [🚀 Quickstart <a id="quickstart"></a>](#-quickstart-)
 - [⛏️ Built Using <a id="built_using"></a>](#️-built-using-)
 - [✍️ Authors <a id="authors"></a>](#️-authors-)
@@ -31,7 +32,7 @@ It is very easy to get the basic chatbot running or integrate it in your applica
 
 <br/>
 
-### Prerequisites
+### 🚦 Prerequisites
 This project is in alpha/testing stage, but the bare minimum works.
 
 See [TODO.md](https://github.com/CWKevo/pyChatteringy/tree/main/TODO.md) for a to-do list.
@@ -43,12 +44,15 @@ See [TODO.md](https://github.com/CWKevo/pyChatteringy/tree/main/TODO.md) for a t
 > This project was tested against Python 3.9 only.
 > Python 3.6+ should work, but wasn't tested (yet - perhaps you'd like to give it a go?)
 > 
+> ---
+
+```s
 $ pip install pychatteringy
 ```
 
-### Updating
+### 🩹 Updating
 
-```shell
+```s
 $ pip install pychatteringy --update
 ```
 
