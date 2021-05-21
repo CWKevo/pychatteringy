@@ -1,40 +1,59 @@
-from typing import Union, List
+from typing import Dict, Union, List
 
 
 class Intent(dict):
     @property
-    def id(self) -> int:
-        return self.get("id", hash(str().join(self.user) + str().join(self.bot)))
+    def file(self) -> str:
+        return self.get("file", "unknown")
+
+    @property
+    def data(self) -> dict:
+        return self.get("data", {})
+
+    @property
+    def id(self) -> str:
+        return f'{self.file}-{self.data.get("id", 0)}'
 
 
     @property
-    def user(self) -> List[str]:
-        return self.get("user", list())
+    def user(self) -> Union[Dict[str, str], List[str]]:
+        return self.data.get("user", list())
 
 
     @property
-    def bot(self) -> List[str]:
-        return self.get("bot", list())
+    def bot(self) -> Union[Dict[str, str], List[str]]:
+        return self.data.get("bot", list())
 
 
     @property
     def priority(self) -> float:
-        return float(self.get("priority", 0.5))
+        return self.data.get("priority", 0.5)
 
 
     @property
     def actions(self) -> List[str]:
-        return self.get("actions", list())
+        return self.data.get("actions", list())
 
 
     @property
     def conditions(self) -> Union['Conditions', None]:
-        raw = self.get("conditions", {})
+        raw = self.data.get("conditions", {})
 
         if raw:
             return Conditions(raw)
         else:
             return Conditions({})
+
+
+class Action(list):
+    @property
+    def action(self) -> str:
+        return self[0]
+
+
+    @property
+    def values(self) -> list:
+        return self[1].split(":")
 
 
 class Conditions(dict):

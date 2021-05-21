@@ -84,7 +84,7 @@ class ChatBot():
         self.session_cache = dict()
 
 
-    def __intent_generator(self, file: str=None, all_files: Union[bool, None]=None) -> Generator[Tuple[str, Intent], None, None]:
+    def __intent_generator(self, file: str=None, all_files: Union[bool, None]=None) -> Generator[Intent, None, None]:
         """
             Yields intents from minified intents JSON file.
 
@@ -108,10 +108,13 @@ class ChatBot():
 
                     # Skip opening and closing list brackets:
                     if (raw != "[" and raw != "]"):
-                        intent_json = json.loads(raw) # type: dict
-                        intent = Intent(intent_json)
+                        intent_dict = dict()
+                        intent_dict["data"] = json.loads(raw)
+                        intent_dict["file"] = intent_file.replace(".json", "")
+                        intent = Intent(intent_dict)
 
-                        yield intent_file, intent
+                        yield intent
+
                     else:
                         continue
 
@@ -194,6 +197,17 @@ class ChatBot():
             return None
 
 
+    def __get_intent_by_id(self, id: int) -> Union[Intent, None]:
+        for intent in self.__intent_generator(self.intent_filename):
+            if intent.id == id:
+                return intent
+
+            else:
+                continue
+
+        return None
+
+
     def chat(self, query: str, user: str=None) -> str:
         """
             The main function that obtains a response to specific query.
@@ -221,6 +235,7 @@ class ChatBot():
         ```
         """
 
+        # Pre-initialize:
         if not user:
             user = self.user
 
@@ -230,6 +245,7 @@ class ChatBot():
         self.session_cache[user]["_messages"] += 1
 
 
+        # Functions:
         def __fallback() -> str:
             if self.log_failed_intents:
                 failed_intent = intent_template.copy()
@@ -243,17 +259,24 @@ class ChatBot():
             return self.fallback
 
 
-        intent_data = self.__get_possible_intent(query)
+        def __get_intent() -> Intent:
+            current_intent_id = self.session_cache.get("user", {}).get("_current_intent_id", None)
 
-        if not intent_data or not intent_data[1] or len(intent_data[1].bot) <= 0:
-            return __fallback()
-        else:
-            intent = intent_data[1] # type: Intent
+            if current_intent_id == None:
+                intent = self.__get_possible_intent(query)
+            else:
+                intent = self.__get_intent_by_id(current_intent_id)
+            
+            return intent
 
-        if self.check_repetitive:
-            self.session_cache["_current_intent_file"] = intent_data[0]
+
+        def __check_repetitive() -> Union[str, None]:
+            self.session_cache["_current_intent_file"] = intent.file
             recent_intents = self.session_cache.get(user, {}).get("_recent_intents", [])
+
             current_intent_file = self.session_cache.get("_current_intent_file", __name__)
+            self.session_cache[user]["_recent_intents"].append(f"{current_intent_file}-{intent.id}")
+
 
             if len(recent_intents) < 1:
                 self.session_cache[user]["_recent_intents"] = list()
@@ -266,27 +289,57 @@ class ChatBot():
                     if (intent_id == f"{current_intent_file}-{intent.id}"):
                         return choice(self.repetitive)
 
-            self.session_cache[user]["_recent_intents"].append(f"{current_intent_file}-{intent.id}")
+            return None
 
-        response = choice(intent.bot)
 
-        conditions = self.evaluate_intent_conditions(intent.conditions.if_raw, user=user)
-        if conditions == False:
-            if intent.conditions.else_responses:
-                response = choice(intent.conditions.else_responses)
+        def __evaluate() -> Union[str, None]:
+            self.__evaluate_intent_actions(user, intent.actions)
+
+            conditions = self.__evaluate_intent_conditions(intent.conditions.if_raw, user=user)
+            if conditions == False:
+                if intent.conditions.else_responses:
+                    return choice(intent.conditions.else_responses)
+                else:
+                    return __fallback()
             else:
-                return __fallback()
+                return None
 
-        self.evaluate_intent_actions(user, intent.actions)
 
+        # Check if intent repeats:
+        if self.check_repetitive:
+            repetitive = __check_repetitive()
+
+            if repetitive != None:
+                return repetitive
+
+
+        # Get intent, fallback if there is no intent or bot response(s):
+        intent = __get_intent()
+        if not intent or len(intent.bot) <= 0:
+            return __fallback()
+
+
+        # Evaluate conditions & actions:
+        response = __evaluate()
+        if response == None:
+            response = choice(intent.bot)
+
+
+        # If response is formatabble, format it:
         if "{" and "}" in response:
+            # Create "this_intent" dict:
+            this_intent = dict()
+            this_intent["answer"] = "o"
+
             all_variables = {
                 "generic": GenericVariables().as_dict,
-                "current_user": self.session_cache.get("user", {})
+                "current_user": self.session_cache.get("user", {}),
+                "this": this_intent
             }
 
-            print(all_variables)
             return response.format_map(all_variables)
+
+        # If response is not formattable, just return it:
         else:
             return response
 
@@ -306,7 +359,7 @@ class ChatBot():
         return parse_all(directory=in_dir, output_directory=out_dir)
 
 
-    def evaluate_intent_conditions(self, conditions: Union[Iterable[str], Iterator[str]], user: str=None) -> bool:
+    def __evaluate_intent_conditions(self, conditions: Union[Iterable[str], Iterator[str]], user: str=None) -> bool:
         solved = list()
 
         for condition in conditions:
@@ -403,7 +456,7 @@ class ChatBot():
         return all(c == True for c in solved)
 
 
-    def evaluate_intent_actions(self, user: str, actions: List[str]):
+    def __evaluate_intent_actions(self, user: str, actions: List[str]):
         solved = list()
         
         for raw_action in actions:
