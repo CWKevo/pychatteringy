@@ -15,7 +15,6 @@ from pychatteringy.functions.helpers import is_time_between
 
 intent_template = {
     "id": 0,
-    "context": None,
     "user": [],
     "bot": [],
     "priority": 0.5,
@@ -255,7 +254,7 @@ class ChatBot():
                 failed_intent = intent_template.copy()
 
                 failed_intent["id"] = self.session_cache.get(user, {}).get("_messages", 0)
-                failed_intent["user"] = list(query)
+                failed_intent["user"] = [query]
 
                 with open(f"{self.intents_directory}/unmatched_intents.txt", "a") as unmatched_intents_file:
                     unmatched_intents_file.write(f"{json.dumps(failed_intent)},\n")
