@@ -288,7 +288,6 @@ class ChatBot():
             self.__evaluate_intent_actions(user, intent.actions)
 
             conditions = self.__evaluate_intent_conditions(intent.conditions.if_raw, user=user)
-            print(conditions)
             if conditions == False:
                 if intent.conditions.else_responses:
                     return choice(intent.conditions.else_responses)
