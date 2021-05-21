@@ -9,5 +9,11 @@
 - [x] setup.py for PIP
 
 "Harder-to-implement" - see the `contexts` branch.
-- [ ] Contexts - Ability to distinguish, what's being talked about (find same context intents in JSON)
-- [ ] Ability to understand user answers, prompt user with question
+- [x] Contexts - Ability to distinguish, what's being talked about (find same context intents in JSON)
+- [x] -> Uses "goto" method.
+- [x] Ability to understand user answers, prompt user with question
+
+
+Contexts were the hardest thing to implement... But the result is worth it! I am happy!
+I don't really plan to make machine learning or advanced contextual engine. Maybe in the future? But for now,
+I feel like this is a proof of concept for something simple, that can eventually become very powerful.
