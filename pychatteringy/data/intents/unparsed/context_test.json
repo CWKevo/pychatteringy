@@ -23,9 +23,27 @@
         },
         "priority": 0.5,
         "conditions": {
-            "if": ["user_data==is_morning:this.answer"],
-            "else": ["You have already answered this question with the same answer."]
+            "if": ["time==morning"],
+            "else": ["goto=3:It's not evening."]
         },
-        "actions": ["user_data=is_morning:this.answer"]
+        "actions": null
+    },
+    {
+        "id": 3,
+        "goto_only": true,
+        "user": {
+            "yes": ["Yes.", "Yes, it is."],
+            "no": ["No.", "No, it isn't"]
+        },
+        "bot": {
+            "yes": ["No, it's not", "No..."],
+            "no": ["See?"]
+        },
+        "priority": 0.5,
+        "conditions": {
+            "if": ["time==evening"],
+            "else": ["Okay, maybe it really is evening..."]
+        },
+        "actions": null
     }
 ]

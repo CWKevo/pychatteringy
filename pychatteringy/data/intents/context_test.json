@@ -1,4 +1,5 @@
 [
 	{"id": 1, "user": ["Hi!", "Hello"], "bot": ["Hello!"], "priority": 0.5, "conditions": {"if": ["time==morning"], "else": ["goto=2:It's not morning there. Is it for you?"]}, "actions": []},
-	{"id": 2, "goto_only": true, "user": {"yes": ["Yes.", "Yes, it is."], "no": ["No.", "No, it isn't"]}, "bot": {"yes": ["Good.", "Vewi gud."], "no": ["That's too bad, I though that you were going to resist arrest."]}, "priority": 0.5, "conditions": {"if": ["user_data==is_morning:this.answer"], "else": ["You have already answered this question with the same answer."]}, "actions": ["user_data=is_morning:this.answer"]}
+	{"id": 2, "goto_only": true, "user": {"yes": ["Yes.", "Yes, it is."], "no": ["No.", "No, it isn't"]}, "bot": {"yes": ["Good.", "Vewi gud."], "no": ["That's too bad, I though that you were going to resist arrest."]}, "priority": 0.5, "conditions": {"if": ["time==morning"], "else": ["goto=3:It's not evening."]}, "actions": null},
+	{"id": 3, "goto_only": true, "user": {"yes": ["Yes.", "Yes, it is."], "no": ["No.", "No, it isn't"]}, "bot": {"yes": ["No, it's not", "No..."], "no": ["See?"]}, "priority": 0.5, "conditions": {"if": ["time==evening"], "else": ["Okay, maybe it really is evening..."]}, "actions": null}
 ]

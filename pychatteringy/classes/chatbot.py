@@ -289,9 +289,11 @@ class ChatBot():
             self.__evaluate_intent_actions(user, intent.actions)
 
             conditions = self.__evaluate_intent_conditions(intent.conditions.if_raw, user=user)
+            print(conditions)
             if conditions == False:
                 if intent.conditions.else_responses:
                     return choice(intent.conditions.else_responses)
+
                 else:
                     return __fallback()
 
@@ -347,37 +349,46 @@ class ChatBot():
             else:
                 response = __get_response(intent)
 
-            if "=" in response:
-                action = response.strip().lower().split("=")
+            # Conditions + actions:
+            if intent:
+                possible_response = __evaluate(intent)
+                if possible_response:
+                    response = possible_response
 
-                if action[0] == "goto":
-                    if ":" in action[1]:
-                        # Split intent ID and goto pre-bot response / question:
-                        pair = action[1].split(":", maxsplit=1)
+            if response:
+                if "=" in response:
+                    action = response.strip().lower().split("=")
 
-                        # AKA. If intent path is specified:
-                        if "-" in pair[0]:
-                            self.session_cache[user]["_goto_intent_id"] = pair[0]
+                    if action[0] == "goto":
+                        if ":" in action[1]:
+                            # Split intent ID and goto pre-bot response / question:
+                            pair = action[1].split(":", maxsplit=1)
 
-                        # If file path isn't specified, look for goto intent in the current intent file instead:
+                            # AKA. If intent path is specified:
+                            if "-" in pair[0]:
+                                self.session_cache[user]["_goto_intent_id"] = pair[0]
+
+                            # If file path isn't specified, look for goto intent in the current intent file instead:
+                            else:
+                                self.session_cache[user]["_goto_intent_id"] = f'{intent.file}-{pair[0]}'
+
+                            # Response is pre-bot's response / bot's question:
+                            return pair[1]
+
                         else:
-                            self.session_cache[user]["_goto_intent_id"] = f'{intent.file}-{pair[0]}'
+                            print(f"[pyChatteringy] Couldn't evaluate response action for: {intent.id}")
+                            return response
 
-                        # Response is pre-bot's response / bot's question:
-                        return pair[1]
-
-                    else:
-                        print(f"[pyChatteringy] Couldn't evaluate response action for: {intent.id}")
-                        return response
+                else:
+                    return response
 
             else:
-                return response
+                return __fallback()
 
 
         # Get intent and response.
         # If we are supposed to "go to" a specific intent from the last intent in the cache,
         # go to it. Else, do normal evaluation instead.
-        print(self.session_cache)
         goto_intent_id = self.session_cache.get(user, {}).get("_goto_intent_id", None)
 
         if goto_intent_id == None:
@@ -426,6 +437,10 @@ class ChatBot():
 
     def __evaluate_intent_conditions(self, conditions: Union[Iterable[str], Iterator[str]], user: str=None) -> bool:
         solved = list()
+
+        # No conditions should return True, so intent will execute:
+        if not conditions:
+            return True
 
         for condition in conditions:
             if "==" in condition:
@@ -523,7 +538,11 @@ class ChatBot():
 
     def __evaluate_intent_actions(self, user: str, actions: List[str]):
         solved = list()
-        
+
+        # If there are no actions, we don't need to evaluate any:
+        if not actions:
+            return True
+
         for raw_action in actions:
             if "=" in raw_action:
                 action = raw_action.strip().lower().split("=", maxsplit=1)
