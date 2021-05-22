@@ -8,7 +8,6 @@ from os import listdir
 from random import choice
 from pathlib import Path
 from datetime import datetime, time
-from parse import parse
 
 from pychatteringy.classes.intents import Intent
 from pychatteringy.functions.string_operations import strings_similarity

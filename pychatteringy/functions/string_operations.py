@@ -1,7 +1,7 @@
 from typing import Union
 
 from string import punctuation
-from fuzzywuzzy import fuzz
+from jellyfish import jaro_distance
 
 
 def remove_punctuation(string: str) -> str:
@@ -13,12 +13,15 @@ def has_punctuation_only(string: str) -> bool:
 
 
 def string_ratio(correct: str, attempt: str) -> float:
-    if has_punctuation_only(correct) or has_punctuation_only(attempt):
-        return fuzz.ratio(correct.lower(), attempt.lower())
+    s1 = correct.lower().strip()
+    s2 = attempt.lower().strip()
 
-    s1 = remove_punctuation(correct).lower()
-    s2 = remove_punctuation(attempt).lower()
-    return fuzz.ratio(s1, s2)
+    if has_punctuation_only(s1) or has_punctuation_only(s2):
+        dist = jaro_distance(s1, s2) * 100
+        return round(dist)
+
+    dist = jaro_distance(remove_punctuation(s1), remove_punctuation(s2)) * 100
+    return round(dist)
 
 
 def strings_similarity(correct: str, attempt: str, threshold: int=65) -> Union[int, None]:
