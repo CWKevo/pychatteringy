@@ -3,11 +3,12 @@ from typing import Iterable, Iterator, Union, Generator, List
 
 import json
 import re
+
 from os import listdir
-from re import match
 from random import choice
 from pathlib import Path
 from datetime import datetime, time
+from parse import parse
 
 from pychatteringy.classes.intents import Intent
 from pychatteringy.functions.string_operations import strings_similarity
@@ -470,23 +471,23 @@ class ChatBot():
 
 
                 if c[0] == "time":
-                    if match(r"^(morning|early|beforenoon)$", c[1]):
+                    if re.match(r"^(morning|early|beforenoon)$", c[1]):
                         x = is_time_between(time(3,00), time(8,00))
                         solved.append(x)
                 
-                    elif match(r"^(midday|noon|lunch(time)?)$", c[1]):
+                    elif re.match(r"^(midday|noon|lunch(time)?)$", c[1]):
                         x = is_time_between(time(11,30), time(12,30))
                         solved.append(x)
 
-                    elif match(r"^(afternoon|after( )?lunch)$", c[1]):
+                    elif re.match(r"^(afternoon|after( )?lunch)$", c[1]):
                         x = is_time_between(time(12,30), time(17,00))
                         solved.append(x)
 
-                    elif match(r"^(evening)$", c[1]):
+                    elif re.match(r"^(evening)$", c[1]):
                         x = is_time_between(time(17,00), time(22,00))
                         solved.append(x)
 
-                    elif match(r"^(night)$", c[1]):
+                    elif re.match(r"^(night)$", c[1]):
                         x = is_time_between(time(22,00), time(1,00))
                         solved.append(x)
 
