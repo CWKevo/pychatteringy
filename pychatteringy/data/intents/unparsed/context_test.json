@@ -7,8 +7,8 @@
             "no": ["No.", "No, it isn't.", "No, not at all.", "Not a chance.", "Actually no.", "No, it actually isn't."]
         },
         "bot": {
-            "yes": ["Indeed."],
-            "no": ["That's too bad, I though that you were going to resist arrest."]
+            "yes": ["Well, it's not morning for me :)"],
+            "no": ["Ah, I see that you are not aware of your own time... Shame."]
         },
         "priority": 0.5,
         "conditions": null,
