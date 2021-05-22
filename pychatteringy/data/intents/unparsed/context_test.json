@@ -1,21 +1,10 @@
 [
     {
         "id": 1,
-        "user": ["Hi!", "Hello"],
-        "bot": ["Hello!"],
-        "priority": 0.5,
-        "conditions": {
-            "if": ["time==morning"],
-            "else": ["goto=2:It's not morning there. Is it for you?"]
-        },
-        "actions": []
-    },
-    {
-        "id": 2,
         "goto_only": true,
         "user": {
-            "yes": ["Yes.", "Yes, it is."],
-            "no": ["No.", "No, it isn't"]
+            "yes": ["Yes.", "Yes, it is.", "Absolutely.", "Yep."],
+            "no": ["No.", "No, it isn't.", "No, not at all.", "Not a chance.", "Actually no.", "No, it actually isn't."]
         },
         "bot": {
             "yes": ["Indeed."],

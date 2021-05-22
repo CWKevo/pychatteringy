@@ -40,7 +40,7 @@ class ChatBot():
         realistic and toxic bot, I recommend to leave this to `False`.
         - `repetitive_messages` - A list of messages to reply when a repetitive message was detected. Defaults to 
 
-        - `threshold` - Integer tolerance used in intent matching (Levenshtein's scale). Can be from 0 to 100.
+        - `threshold` - Tolerance used in intent matching (Jaro distance). Can be an integer from 0 to 100.
 
         - `intents_directory` - Path to your intents directory (without trailing slash). Defaults to `"intents"`.
         - `intent_filename` - File name of intent JSON data to obtain intents from. Defaults to `generic.json"`.
@@ -65,7 +65,7 @@ class ChatBot():
         brackets accross lines and then yielding valid JSON is pretty tough, so why not make both of our lives easier?)
     """
 
-    def __init__(self, user: str="Fred", fallback_response: str="Sorry, I don't understand that yet.", log_failed_intents: bool=True, check_for_repetitive_messages: bool=False, repetitive_messages: List[str]=["I have already reacted to that?", "You are repeating yourself.", "I have already responded to that a while ago.", "Try to not repeat yourself..."], threshold: int=65, intents_directory: Union[str, Path]=Path(__file__ + "/../../data/intents"), intent_file: Union[str, None]=None, user_data_directory: Union[str, Path]=Path(__file__ + "/../../data/users"), max_repetitive_cache: int=3):
+    def __init__(self, user: str="Fred", fallback_response: str="Sorry, I don't understand that yet.", log_failed_intents: bool=True, check_for_repetitive_messages: bool=False, repetitive_messages: List[str]=["I have already reacted to that?", "You are repeating yourself.", "I have already responded to that a while ago.", "Try to not repeat yourself..."], threshold: int=80, intents_directory: Union[str, Path]=Path(__file__ + "/../../data/intents"), intent_file: Union[str, None]=None, user_data_directory: Union[str, Path]=Path(__file__ + "/../../data/users"), max_repetitive_cache: int=3):
         self.user = user
 
         self.fallback = fallback_response
@@ -180,14 +180,26 @@ class ChatBot():
         same_ratio_intents = list() # type: List[Intent]
 
         for intent in self.__intent_generator(self.intent_filename):
-            for possible_query in intent.user:
-                ratio = strings_similarity(query, possible_query, threshold=self.threshold)
-                if ratio:
-                    if intent not in possible_intents:
-                        intent["ratio"] = ratio
-                        possible_intents.append(intent)
-                else:
-                    continue
+            if isinstance(intent.user, list):
+                for possible_query in intent.user:
+                    ratio = strings_similarity(query, possible_query, threshold=self.threshold)
+                    if ratio:
+                        if intent not in possible_intents:
+                            intent["ratio"] = ratio
+                            possible_intents.append(intent)
+                    else:
+                        continue
+
+            elif isinstance(intent.user, dict):
+                for _, possible_queries in intent.user.items():
+                    for possible_query in possible_queries:
+                        ratio = strings_similarity(query, possible_query, threshold=self.threshold)
+                        if ratio:
+                            if intent not in possible_intents:
+                                intent["ratio"] = ratio
+                                possible_intents.append(intent)
+                        else:
+                            continue
 
 
         if possible_intents:
@@ -318,6 +330,7 @@ class ChatBot():
                     for response in responses:
                         ratio = strings_similarity(query, response, threshold=self.threshold)
                         if ratio and ratio >= self.threshold:
+                            intent["ratio"] = ratio
                             response_id = possible_response_id
 
                 for possible_response_id, responses in intent.bot.items():
@@ -358,7 +371,8 @@ class ChatBot():
 
             if response:
                 if "=" in response:
-                    action = response.strip().lower().split("=")
+                    action = response.strip().split("=")
+                    action[0] = action[0].lower()
 
                     if action[0] == "goto":
                         if ":" in action[1]:
@@ -402,7 +416,11 @@ class ChatBot():
             if not intent:
                 print(f'[pyChatteringy] WARNING: Unable to locate intent ID "{goto_intent_id}"')
 
-        response = __evaluate_response(intent)
+        if intent:
+            response = __evaluate_response(intent)
+
+        else:
+            response = __fallback()
 
 
         # If response contains formattable curly brackets, format it:

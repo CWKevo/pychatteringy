@@ -1,8 +1,10 @@
 from typing import Union
 
+import time
+
 from string import punctuation
 from jellyfish import jaro_distance
-import time
+
 
 def remove_punctuation(string: str) -> str:
     return string.translate(str.maketrans('', '', punctuation))
@@ -12,7 +14,7 @@ def has_punctuation_only(string: str) -> bool:
     return all(i in punctuation for i in string)
 
 
-def string_ratio(correct: str, attempt: str) -> float:
+def string_ratio(correct: str, attempt: str) -> int:
     s1 = correct.lower().strip()
     s2 = attempt.lower().strip()
 
@@ -24,7 +26,7 @@ def string_ratio(correct: str, attempt: str) -> float:
     return round(dist)
 
 
-def strings_similarity(correct: str, attempt: str, threshold: int=65) -> Union[int, None]:
+def strings_similarity(correct: str, attempt: str, threshold: int) -> Union[int, None]:
     ratio = string_ratio(correct, attempt)
 
     if ratio >= threshold:
