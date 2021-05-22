@@ -65,7 +65,7 @@ class ChatBot():
         brackets accross lines and then yielding valid JSON is pretty tough, so why not make both of our lives easier?)
     """
 
-    def __init__(self, user: str="Fred", fallback_response: str="Sorry, I don't understand that yet.", log_failed_intents: bool=True, check_for_repetitive_messages: bool=False, repetitive_messages: List[str]=["I have already reacted to that?", "You are repeating yourself.", "I have already responded to that a while ago.", "Try to not repeat yourself..."], threshold: int=80, intents_directory: Union[str, Path]=Path(__file__ + "/../../data/intents"), intent_file: Union[str, None]=None, user_data_directory: Union[str, Path]=Path(__file__ + "/../../data/users"), max_repetitive_cache: int=3):
+    def __init__(self, user: str="Kevo", fallback_response: str="Sorry, I don't understand that yet.", log_failed_intents: bool=True, check_for_repetitive_messages: bool=False, repetitive_messages: List[str]=["I have already reacted to that?", "You are repeating yourself.", "I have already responded to that a while ago.", "Try to not repeat yourself..."], threshold: int=80, intents_directory: Union[str, Path]=Path(__file__ + "/../../data/intents"), intent_file: Union[str, None]=None, user_data_directory: Union[str, Path]=Path(__file__ + "/../../data/users"), max_repetitive_cache: int=3):
         self.user = user
 
         self.fallback = fallback_response
