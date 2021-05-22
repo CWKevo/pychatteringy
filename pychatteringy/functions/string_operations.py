@@ -51,5 +51,6 @@ def __test_strings():
     end = time.time()
     print("Jaro distance took:", end - start) # 0.000x - 0.003x - Levenshtein distance is a bit slower
 
+
 if __name__ == "__main__":
     __test_strings()
