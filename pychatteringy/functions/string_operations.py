@@ -2,6 +2,7 @@ from typing import Union
 
 from string import punctuation
 from fuzzywuzzy import fuzz
+import time
 
 
 def remove_punctuation(string: str) -> str:
@@ -40,9 +41,13 @@ def __test_strings():
     guesses = ["I have walked in a house today.", "I walked in the house!", "The house is mine...", "I walked in a house today!", "Today I walked?"]
 
     print("\nLevenshtein fuzzy matching ratio test:")
+    start = time.time()
+
     for guess in guesses:
         print(f"{guess} - {strings_similarity(correct, guess)}")
 
+    end = time.time()
+    print("Levenshtein distance took:", end - start) # 0.001x - 0.004x - Jaro distance is a bit faster
 
 if __name__ == "__main__":
     __test_strings()
