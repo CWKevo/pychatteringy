@@ -2,7 +2,7 @@ from typing import Union
 
 from string import punctuation
 from jellyfish import jaro_distance
-
+import time
 
 def remove_punctuation(string: str) -> str:
     return string.translate(str.maketrans('', '', punctuation))
@@ -42,10 +42,14 @@ def __test_strings():
     correct = "Today I have walked into a house."
     guesses = ["I have walked in a house today.", "I walked in the house!", "The house is mine...", "I walked in a house today!", "Today I walked?"]
 
-    print("\nLevenshtein fuzzy matching ratio test:")
+    print("\nJaro distance:")
+    start = time.time()
+
     for guess in guesses:
         print(f"{guess} - {strings_similarity(correct, guess)}")
 
+    end = time.time()
+    print("Jaro distance took:", end - start) # 0.000x - 0.003x
 
 if __name__ == "__main__":
     __test_strings()
