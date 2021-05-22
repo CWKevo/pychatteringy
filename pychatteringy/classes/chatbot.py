@@ -254,7 +254,7 @@ class ChatBot():
             if self.log_failed_intents:
                 failed_intent = intent_template.copy()
 
-                failed_intent["id"] = self.session_cache.get(user, {}).get("_messages", 0)
+                failed_intent["id"] = self.session_cache.get(user, dict()).get("_messages", 0)
                 failed_intent["user"] = list(query)
 
                 with open(f"{self.intents_directory}/unmatched_intents.txt", "a") as unmatched_intents_file:
@@ -265,7 +265,7 @@ class ChatBot():
 
         def __check_repetitive(intent: Intent) -> Union[str, None]:
             self.session_cache["_current_intent_file"] = intent.file
-            recent_intents = self.session_cache.get(user, {}).get("_recent_intents", [])
+            recent_intents = self.session_cache.get(user, dict()).get("_recent_intents", [])
 
             current_intent_file = self.session_cache.get("_current_intent_file", __name__)
             self.session_cache[user]["_recent_intents"].append(f"{current_intent_file}-{intent.id}")
@@ -322,6 +322,7 @@ class ChatBot():
 
                 for possible_response_id, responses in intent.bot.items():
                     if possible_response_id == response_id:
+                        self.session_cache[user]["_current_response_id"] = possible_response_id
                         response = choice(responses)
                         return response
 
@@ -389,7 +390,7 @@ class ChatBot():
         # Get intent and response.
         # If we are supposed to "go to" a specific intent from the last intent in the cache,
         # go to it. Else, do normal evaluation instead.
-        goto_intent_id = self.session_cache.get(user, {}).get("_goto_intent_id", None)
+        goto_intent_id = self.session_cache.get(user, dict()).get("_goto_intent_id", None)
 
         if goto_intent_id == None:
             intent = self.__get_possible_intent(query)
@@ -405,10 +406,15 @@ class ChatBot():
         if "{" and "}" in response:
             # Create "this_intent" dict:
             this_intent = dict()
-            this_intent["answer"] = "o"
+            this_intent["raw_data"] = intent
+
+            # Get current response ID:
+            answer_id = self.session_cache.get(user, dict()).get("_current_response_id", None)
+            this_intent["answer_id"] = answer_id
+            self.session_cache[user]["_current_response_id"] = None
 
             all_variables = {
-                "generic": GenericVariables().as_dict,
+                "generic": GenericVariables(),
                 "current_user": self.session_cache.get("user", {}),
                 "this": this_intent
             }
@@ -504,7 +510,7 @@ class ChatBot():
                 elif c[0] == "session_data":
                     if ":" in c[1]:
                         pair = c[1].split(":", maxsplit=1)
-                        data = self.session_cache.get(user, {}).get(pair[0])
+                        data = self.session_cache.get(user, dict()).get(pair[0])
                         
                         if data:
                             if data == pair[1]:
@@ -517,7 +523,7 @@ class ChatBot():
 
 
                     else:
-                        data = self.session_cache.get(user, {}).get(c[1])
+                        data = self.session_cache.get(user, dict()).get(c[1])
 
                         if data:
                             if data == True:

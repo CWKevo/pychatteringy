@@ -11,6 +11,14 @@ class GenericVariables():
         - `date` - The current date.
     """
 
+    def __init__(self):
+        """Puts all variables in a `dict`."""
+        super().__init__({
+            "time": self.time,
+            "time12": self.time12,
+            "date": self.date
+        })
+
     @property
     def time(self) -> str:
         return datetime.datetime.now().strftime(r"%H:%M")
@@ -24,12 +32,3 @@ class GenericVariables():
     @property
     def date(self) -> str:
         return datetime.datetime.now().strftime(r"%d. %B %Y")
-
-
-    @property
-    def as_dict(self) -> dict:
-        return {
-            "time": self.time,
-            "time12": self.time12,
-            "date": self.date
-        }

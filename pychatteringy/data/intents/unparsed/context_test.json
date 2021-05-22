@@ -18,7 +18,7 @@
             "no": ["No.", "No, it isn't"]
         },
         "bot": {
-            "yes": ["Good.", "Vewi gud."],
+            "yes": ["{this.answer_id} indeed. Today is {generic.date} BTW."],
             "no": ["That's too bad, I though that you were going to resist arrest."]
         },
         "priority": 0.5,
