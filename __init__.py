@@ -14,4 +14,4 @@ if __name__ == "__main__":
 
     while True:
         x = chatbot.chat(input(f"{chatbot.user}: "))
-        print("Perfectly context aware bot:", x)
+        print("Clyde:", x)

@@ -1,5 +1,8 @@
+from collections import defaultdict
 from typing import Iterable, Iterator, Union, Generator, List
+
 import json
+import re
 from os import listdir
 from re import match
 from random import choice
@@ -7,7 +10,6 @@ from pathlib import Path
 from datetime import datetime, time
 
 from pychatteringy.classes.intents import Intent
-from pychatteringy.classes.variables import GenericVariables
 from pychatteringy.functions.string_operations import strings_similarity
 from pychatteringy.tools.intent_parser import parse_all
 from pychatteringy.functions.helpers import is_time_between
@@ -253,7 +255,7 @@ class ChatBot():
             if self.log_failed_intents:
                 failed_intent = intent_template.copy()
 
-                failed_intent["id"] = self.session_cache.get(user, {}).get("_messages", 0)
+                failed_intent["id"] = self.session_cache.get(user, dict()).get("_messages", 0)
                 failed_intent["user"] = [query]
 
                 with open(f"{self.intents_directory}/unmatched_intents.txt", "a") as unmatched_intents_file:
@@ -397,27 +399,43 @@ class ChatBot():
             intent = self.__get_intent_by_id(goto_intent_id)
             self.session_cache[user]["_goto_intent_id"] = None
 
+            if not intent:
+                print(f'[pyChatteringy] WARNING: Unable to locate intent ID "{goto_intent_id}"')
+
         response = __evaluate_response(intent)
 
 
-        # If response is formatabble, format it:
-        if "{" and "}" in response:
-            # Create "this_intent" dict:
-            this_intent = dict()
-            this_intent["raw_data"] = intent
+        # If response contains formattable curly brackets, format it:
+        if re.match(r'.*{(.*)}.*', response):
+            
+            # All variables, very complicated and compressed:
+            all_variables   = defaultdict(lambda: "<unknown>", dict(
+                generic         = defaultdict(lambda: "<unknown>", dict(
+                    time            = datetime.now().strftime(r"%H:%M"),
+                    time12          = datetime.now().strftime(r"%I:%M"),
+                    date            = datetime.now().strftime(r"%d. %B %Y"),
+                    datetime        = datetime.now()
+                )),
+                current_user    = defaultdict(lambda: "<unknown>", self.session_cache.get(user, dict())),
+                this            = defaultdict(lambda: "<unknown>", dict(
+                    raw_data        = intent,
+                    answer_id       = self.session_cache.get(user, dict()).get("_current_response_id", "<unknown>")
+                ))
+            ))
 
-            # Get current response ID:
-            answer_id = self.session_cache.get(user, dict()).get("_current_response_id", None)
-            this_intent["answer_id"] = answer_id
+            try:
+                # Format the response:
+                r = response.format_map(all_variables)
+
+            except (AttributeError, IndexError, ValueError, KeyError) as e:
+                # Formatting failed:
+                print(f"[pyChatteringy] WARNING: Unable to format intent variable: {e}")
+                r = response
+
+            # Clear current response ID:
             self.session_cache[user]["_current_response_id"] = None
 
-            all_variables = {
-                "generic": GenericVariables(),
-                "current_user": self.session_cache.get("user", {}),
-                "this": this_intent
-            }
-
-            return response.format_map(all_variables)
+            return r
 
         # If response is not formattable, just return it:
         else:
