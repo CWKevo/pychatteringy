@@ -49,7 +49,7 @@ def __test_strings():
         print(f"{guess} - {strings_similarity(correct, guess)}")
 
     end = time.time()
-    print("Jaro distance took:", end - start) # 0.000x - 0.003x
+    print("Jaro distance took:", end - start) # 0.000x - 0.003x - Levenshtein distance is a bit slower
 
 if __name__ == "__main__":
     __test_strings()
