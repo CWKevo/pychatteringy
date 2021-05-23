@@ -54,3 +54,24 @@ bot:no          = See?
 
 actions         = user_data=morning:{this.answer}
 ```
+
+### Hardest of them all - entities:
+
+Ability to extract variables from user query, e. g.:
+
+```
+"user": ["I want {{thing}} for {{price}}."]
+```
+
+The problem is with jaro distance - if we compare similar strings, there is no way for
+the bot to know where the variable is located.
+
+Things I have considered:
+- Exact matching - user query must be same as intent defined one for us to extract variables (using the `parse` module).
+- "Overlay" all words and pick those that are at the position of the variable - inacurrate when number of words and word order changes.
+- Use named entity recognition library (e. g.: spaCy) - limited to English language only
+- Somewhat transform the user message to intent template while preserving the user query, then extract with `parse` - impossible?
+- Make user type the variables in quotes, so we can do regEx matching to find the variable - not very pleasant for users
+- Parse query by finding all patterns from 2 words offset around template
+
+- Make TODO that actually makes sense. Makes sense to me ATM, so no need to change it
