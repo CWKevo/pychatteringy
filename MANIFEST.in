@@ -1,1 +1,2 @@
 recursive-include pychatteringy/data/intents *
+include pychatteringy/data/users/.placeholder

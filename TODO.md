@@ -80,5 +80,8 @@ Things I have considered:
 We can either lower the threshold or pre-evaluate the entities and them replace them in the template (this one seems like an alright solution to me).
 
 TODO:
-- Optimize for speed & make code clean (uhh...)
-- Remove punctuation from entities at end ("Can I have a boat for 1 €?" will make `price` = "1 €?")
+- [ ] Optimize for speed & make code clean (uhh...)
+- [ ] Remove punctuation from entities at end ("Can I have a boat for 1 €?" will make `price` = "1 €?")
+
+### Documentation
+- [ ] Documentation
