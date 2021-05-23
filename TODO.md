@@ -57,7 +57,7 @@ actions         = user_data=morning:{this.answer}
 
 ### Hardest of them all - entities:
 
-Ability to extract variables from user query, e. g.:
+- [x] Ability to extract variables from user query, e. g.:
 
 ```
 "user": ["I want {{thing}} for {{price}}."]
@@ -75,3 +75,10 @@ Things I have considered:
 - Parse query by finding all patterns from 2 words offset around template
 
 - Make TODO that actually makes sense. Makes sense to me ATM, so no need to change it
+
+**Update:** It kind of works, the only problem is that the string similarity has lower ratio with all the different stuff that user can specify now.
+We can either lower the threshold or pre-evaluate the entities and them replace them in the template (this one seems like an alright solution to me).
+
+TODO:
+- Optimize for speed & make code clean (uhh...)
+- Remove punctuation from entities at end ("Can I have a boat for 1 €?" will make `price` = "1 €?")

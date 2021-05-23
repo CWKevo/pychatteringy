@@ -10,7 +10,7 @@ from pathlib import Path
 from datetime import datetime, time
 
 from pychatteringy.classes.intents import Intent
-from pychatteringy.functions.string_operations import strings_similarity
+from pychatteringy.functions.string_operations import extract_entities, string_ratio, strings_similarity
 from pychatteringy.tools.intent_parser import parse_all
 from pychatteringy.functions.helpers import is_time_between
 
@@ -175,7 +175,7 @@ class ChatBot():
             return dict()
 
 
-    def __get_possible_intent(self, query: str) -> Union[Intent, None]:
+    def __get_possible_intent(self, query: str, **kwargs) -> Union[Intent, None]:
         possible_intents = list() # type: List[Intent]
         same_ratio_intents = list() # type: List[Intent]
 
@@ -183,10 +183,14 @@ class ChatBot():
             if isinstance(intent.user, list):
                 for possible_query in intent.user:
                     ratio = strings_similarity(query, possible_query, threshold=self.threshold)
-                    if ratio:
-                        if intent not in possible_intents:
-                            intent["ratio"] = ratio
-                            possible_intents.append(intent)
+
+                    if re.match(r'.*{(.*)}.*', possible_query):
+                        intent["entities"] = extract_entities(templates=intent.user, query=query, **kwargs)
+
+                    if ratio and intent not in possible_intents:
+                        intent["ratio"] = ratio
+                        possible_intents.append(intent)
+
                     else:
                         continue
 
@@ -194,10 +198,14 @@ class ChatBot():
                 for _, possible_queries in intent.user.items():
                     for possible_query in possible_queries:
                         ratio = strings_similarity(query, possible_query, threshold=self.threshold)
-                        if ratio:
-                            if intent not in possible_intents:
-                                intent["ratio"] = ratio
-                                possible_intents.append(intent)
+
+                        if re.match(r'.*{(.*)}.*', possible_query):
+                            intent["entities"] = extract_entities(templates=possible_queries, query=query, **kwargs)
+
+                        if ratio and intent not in possible_intents:
+                            intent["ratio"] = ratio
+                            possible_intents.append(intent)
+
                         else:
                             continue
 
@@ -298,8 +306,8 @@ class ChatBot():
             return None
 
 
-        def __evaluate(intent: Intent) -> Union[str, None]:
-            self.__evaluate_intent_actions(user, intent.actions)
+        def __evaluate_conditions_and_actions(intent: Intent, all_variables: dict) -> Union[str, None]:
+            self.__evaluate_intent_actions(user, intent.actions, all_variables=all_variables)
 
             conditions = self.__evaluate_intent_conditions(intent.conditions.if_raw, user=user)
             if conditions == False:
@@ -344,10 +352,7 @@ class ChatBot():
 
             elif isinstance(intent.user, list) and isinstance(intent.bot, list):
                 # Evaluate conditions & actions:
-                response = __evaluate(intent)
-                if response == None:
-                    response = choice(intent.bot)
-                
+                response = choice(intent.bot)
                 return response
 
 
@@ -356,7 +361,7 @@ class ChatBot():
                 return __fallback()
 
 
-        def __evaluate_response(intent: Intent) -> str:
+        def __evaluate_response(intent: Intent, all_variables: dict) -> str:
             if not intent or len(intent.bot) <= 0:
                 response = __fallback()
 
@@ -365,7 +370,7 @@ class ChatBot():
 
             # Conditions + actions:
             if intent:
-                possible_response = __evaluate(intent)
+                possible_response = __evaluate_conditions_and_actions(intent, all_variables=all_variables)
                 if possible_response:
                     response = possible_response
 
@@ -417,15 +422,6 @@ class ChatBot():
                 print(f'[pyChatteringy] WARNING: Unable to locate intent ID "{goto_intent_id}"')
 
         if intent:
-            response = __evaluate_response(intent)
-
-        else:
-            response = __fallback()
-
-
-        # If response contains formattable curly brackets, format it:
-        if re.match(r'.*{(.*)}.*', response):
-            
             # All variables, very complicated and compressed:
             all_variables   = defaultdict(lambda: "<unknown>", dict(
                 generic         = defaultdict(lambda: "<unknown>", dict(
@@ -436,11 +432,19 @@ class ChatBot():
                 )),
                 current_user    = defaultdict(lambda: "<unknown>", self.session_cache.get(user, dict())),
                 this            = defaultdict(lambda: "<unknown>", dict(
-                    raw_data        = intent,
-                    answer_id       = self.session_cache.get(user, dict()).get("_current_response_id", "<unknown>")
+                    raw_data        = defaultdict(lambda: "<unknown>", intent),
+                    answer_id       = self.session_cache.get(user, dict()).get("_current_response_id", "<unknown>"),
+                    entities        = defaultdict(lambda: "<unknown>", intent.entities)
                 ))
             ))
 
+            response = __evaluate_response(intent, all_variables=all_variables)
+
+        else:
+            response = __fallback()
+
+        # If response contains formattable curly brackets, format it:
+        if re.match(r'.*{(.*)}.*', response):
             try:
                 # Format the response:
                 r = response.format_map(all_variables)
@@ -576,14 +580,22 @@ class ChatBot():
         return all(c == True for c in solved)
 
 
-    def __evaluate_intent_actions(self, user: str, actions: List[str]):
+    def __evaluate_intent_actions(self, user: str, actions: List[str], all_variables: dict):
         solved = list()
 
         # If there are no actions, we don't need to evaluate any:
         if not actions:
             return True
 
-        for raw_action in actions:
+        for _action in actions:
+            if re.match(r'.*{(.*)}.*', _action):
+                try:
+                    raw_action = _action.format_map(all_variables)
+
+                except (AttributeError, IndexError, ValueError, KeyError) as e:
+                    print(f"[pyChatteringy] WARNING: Unable to format intent action '{raw_action}': {e}")
+                    raw_action = _action
+
             if "=" in raw_action:
                 action = raw_action.strip().lower().split("=", maxsplit=1)
 
@@ -591,7 +603,7 @@ class ChatBot():
                 if action[0] == "user_data":
                     if ":" in action[1]:
                         pair = action[1].split(":", maxsplit=1)
-                        self.update_user_data(pair[1], pair[2], user=user)
+                        self.update_user_data(pair[0], pair[1], user=user)
 
                     else:
                         self.update_user_data(action[1], True, user=user)

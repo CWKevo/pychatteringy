@@ -19,6 +19,12 @@ class Intent(dict):
 
 
     @property
+    def entities(self) -> dict:
+        """Raw `dict` of the intent's entities."""
+        return self.get("entities", {})
+
+
+    @property
     def data(self) -> dict:
         """Raw `dict` of the intent's actual data."""
         return self.get("data", {})

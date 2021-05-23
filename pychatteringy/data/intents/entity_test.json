@@ -1,0 +1,3 @@
+[
+	{"id": 1, "user": {"noprice": ["I'd like to have a {thing}.", "I want to have a {thing}.", "Can I have a {thing}?"], "price": ["I'd like to buy a {thing} for {price}.", "Can I have a {thing} for {price}?"]}, "bot": {"noprice": ["Oh, so you want {this[entities][thing]}?"], "price": ["Oh, so you want {this[entities][thing]} for {this[entities][price]}?"]}, "priority": 0.5, "conditions": null, "actions": ["user_data=wants:{this[entities][thing]} for {this[entities][price]}"]}
+]

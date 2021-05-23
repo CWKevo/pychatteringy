@@ -1,4 +1,4 @@
-from typing import Union, Dict
+from typing import List, Union
 
 import parse
 from jellyfish import jaro_distance
@@ -60,12 +60,16 @@ def simplify_template(template: str, exclude_a: bool=True, words_around: int=2) 
     return sliced_template.strip()
 
 
-def extract_entities(template: str, query: str, **kwargs) -> Dict[str, str]:
-    stripped_template = simplify_template(template, **kwargs)
+def extract_entities(templates: List[str], query: str, **kwargs) -> dict:
+    for template in templates:
+        stripped_template = simplify_template(template, **kwargs)
+        all_entities = parse.search(stripped_template, query + ".") # appending dot will prevent failure, if there is no dot
 
-    all_entities = parse.search(stripped_template, query)
-    if all_entities:
-        return all_entities.named
+        if all_entities:
+            return all_entities.named
+
+        else:
+            return dict()
 
 
 def __test_strings(entities: bool=False):
