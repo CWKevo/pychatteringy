@@ -1,3 +1,5 @@
+- [ ] Recode chatbot class - very messy ATM, entities killed it.
+
 ### Global
 - [x] Make chabot a class (with options for intent path, etc.)
 - [x] Organize code, move to folders, etc...

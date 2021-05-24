@@ -124,7 +124,7 @@ class ChatBot():
                         yield intent
 
                     except Exception as e:
-                        print(f"Failure in {loc}: {e}")
+                        print(f"[pyChatteringy] Failure in {loc}: {e}")
                         continue
 
                 else:
@@ -176,16 +176,35 @@ class ChatBot():
 
 
     def __get_possible_intent(self, query: str, **kwargs) -> Union[Intent, None]:
+        def __replace_with_entities(templates: List[str], entities: dict) -> List[str]:
+            new = list() # type: List[str]
+
+            for template in templates:
+                try:
+                    new.append(template.format_map(entities))
+
+                except:
+                    new.append(template)
+
+            return new
+
         possible_intents = list() # type: List[Intent]
         same_ratio_intents = list() # type: List[Intent]
 
         for intent in self.__intent_generator(self.intent_filename):
             if isinstance(intent.user, list):
                 for possible_query in intent.user:
-                    ratio = strings_similarity(query, possible_query, threshold=self.threshold)
-
                     if re.match(r'.*{(.*)}.*', possible_query):
-                        intent["entities"] = extract_entities(templates=intent.user, query=query, **kwargs)
+                        entities = extract_entities(templates=intent.user, query=query, **kwargs)
+                        intent["entities"] = entities
+                        possible_user = __replace_with_entities(templates=intent.user, entities=intent["entities"])
+
+                    else:
+                        possible_user = intent.user
+
+                for possible_query in possible_user:
+                    print(possible_query)
+                    ratio = strings_similarity(query, possible_query, threshold=self.threshold)
 
                     if ratio and intent not in possible_intents:
                         intent["ratio"] = ratio
@@ -195,12 +214,18 @@ class ChatBot():
                         continue
 
             elif isinstance(intent.user, dict):
-                for _, possible_queries in intent.user.items():
+                for _, no_entities_possible_queries in intent.user.items():
+                    for possible_query in no_entities_possible_queries:
+                        if re.match(r'.*{(.*)}.*', possible_query):
+                            entities = extract_entities(templates=no_entities_possible_queries, query=query, **kwargs)
+                            intent["entities"] = entities
+                            possible_queries = __replace_with_entities(templates=no_entities_possible_queries, entities=intent["entities"])
+
+                        else:
+                            possible_queries = no_entities_possible_queries
+
                     for possible_query in possible_queries:
                         ratio = strings_similarity(query, possible_query, threshold=self.threshold)
-
-                        if re.match(r'.*{(.*)}.*', possible_query):
-                            intent["entities"] = extract_entities(templates=possible_queries, query=query, **kwargs)
 
                         if ratio and intent not in possible_intents:
                             intent["ratio"] = ratio
@@ -260,6 +285,9 @@ class ChatBot():
             print("Bot:", response)
         ```
         """
+
+        if len(query) < 1:
+            return "You're quite speechless, aren't you?"
 
         # Pre-initialize:
         if not user:
@@ -584,7 +612,7 @@ class ChatBot():
         solved = list()
 
         # If there are no actions, we don't need to evaluate any:
-        if not actions:
+        if not actions or actions == []:
             return True
 
         for _action in actions:
@@ -592,9 +620,12 @@ class ChatBot():
                 try:
                     raw_action = _action.format_map(all_variables)
 
-                except (AttributeError, IndexError, ValueError, KeyError) as e:
-                    print(f"[pyChatteringy] WARNING: Unable to format intent action '{raw_action}': {e}")
+                except Exception as e:
+                    print(f"[pyChatteringy] WARNING: Unable to format intent action '{_action}': {e}")
                     raw_action = _action
+
+            else:
+                raw_action = _action
 
             if "=" in raw_action:
                 action = raw_action.strip().lower().split("=", maxsplit=1)

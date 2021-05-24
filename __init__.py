@@ -10,7 +10,7 @@ from pychatteringy.classes.chatbot import ChatBot
 
 
 if __name__ == "__main__":
-    chatbot = ChatBot(threshold=50, intents_directory=f"{ROOT}/pychatteringy/data/intents", user_data_directory=f"{ROOT}/pychatteringy/data/users")
+    chatbot = ChatBot(threshold=80, intent_file="entity_test.json", intents_directory=f"{ROOT}/pychatteringy/data/intents", user_data_directory=f"{ROOT}/pychatteringy/data/users")
 
     while True:
         x = chatbot.chat(input(f"{chatbot.user}: "))
