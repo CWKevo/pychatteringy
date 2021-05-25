@@ -50,7 +50,7 @@ See [TODO.md](https://github.com/CWKevo/pyChatteringy/tree/main/TODO.md) for a t
 $ pip install pychatteringy
 ```
 
-### 🩹 Updating
+### ⬆️ Updating
 
 ```s
 $ pip install pychatteringy --update
