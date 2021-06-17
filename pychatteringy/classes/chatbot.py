@@ -203,7 +203,6 @@ class ChatBot():
                         possible_user = intent.user
 
                 for possible_query in possible_user:
-                    print(possible_query)
                     ratio = strings_similarity(query, possible_query, threshold=self.threshold)
 
                     if ratio and intent not in possible_intents:

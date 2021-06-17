@@ -1,4 +1,5 @@
 - [ ] Recode chatbot class - very messy ATM, entities killed it.
+- [ ] Response returns "Response" object instead, with entities, etc...
 
 ### Global
 - [x] Make chabot a class (with options for intent path, etc.)
@@ -26,7 +27,7 @@ I feel like this is a proof of concept for something simple, that can eventually
 - [ ] More conditions & comparsions (more, less than, not, etc.)
 
 ### Tools:
-- [ ] Intent generator can understand contexts (goto methods) and multiresponses. This will be another hard thing to implement, because - how will the syntax even look like? I feel like this one is possible, but it will be another hard thing to do.
+- [ ] Intent generator (creator) can understand contexts (goto methods) and multiresponses. This will be another hard thing to implement, because - how will the syntax even look like? I feel like this one is possible, but it will be another hard thing to do.
 
 
 #### Example syntax (idea):
